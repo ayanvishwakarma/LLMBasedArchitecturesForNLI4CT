@@ -26,7 +26,6 @@ class DatasetNLI4CT(Dataset):
             ctr = json.load(file)
             section_text = ctr[data_inst['Section_id']]
             subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
-            print(subsection_ids[0] >= 0)
             texts.extend([f'Hypothesis: "{data_inst["Statement"]}", Premise: In Primary CTR {data_inst["Section_id"]} section, ' 
                           + (f'with subsection heading "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '') 
                           + f'in line {i} it is given that "{section_text[i]}"' for i in range(len(section_text))])
