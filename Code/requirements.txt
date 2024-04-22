@@ -1,3 +1,5 @@
 torch
 peft
 json
+transformers
+numpy
