@@ -77,7 +77,7 @@ if __name__ == '__main__':
     assert(0.0 <= args.Lambda <= 1.0)
     
     # ------------------------------Result Address------------------------------
-    root_dir = __file__
+    root_dir = '/'.join(__file__.split('/')[:-2])
     result_addr = f'{root_dir}/Results/{args.exp_name}-{str(args.seed)}'
 
     # ------------------------------Parameters to save------------------------------
