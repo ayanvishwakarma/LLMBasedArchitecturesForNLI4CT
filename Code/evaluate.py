@@ -9,7 +9,7 @@ def task1_metrics(targets, predictions, uuids, args):
     assert all([(uuid in targets and uuid in predictions) for uuid in uuids])
     true = [targets[uuid]['Label'] == 'Entailment' for uuid in uuids]
     pred = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
-    prob = [prediction[uuid]['EntailmentProbability'] for uuid in uuids]
+    prob = [predictions[uuid]['EntailmentProbability'] for uuid in uuids]
 
     metrics_dict = {}
     metrics_dict['Task1-Entailment-precision'] = precision_score(true, pred)
