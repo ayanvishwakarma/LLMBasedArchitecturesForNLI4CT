@@ -167,8 +167,8 @@ class ModelArchitecture1(Module):
         evidence_logits = torch.tensor(evidence_logits, dtype=torch.float32)[sorted_inds]
         
         thresholds = (evidence_logits[:-1] + evidence_logits[1:]) / 2
-        TP = torch.cumsum(evidence_logits[::-1][:-1] == 1, dim=-1)[::-1]
-        FP = torch.cumsum(evidence_logits[::-1][:-1] == 0, dim=-1)[::-1]
+        TP = torch.flip(torch.cumsum(torch.flip(evidence_logits, dims=(-1,))[:-1] == 1, dim=-1), dims=(-1,))
+        FP = torch.flip(torch.cumsum(torch.flip(evidence_logits, dims=(-1,))[:-1] == 0, dim=-1), dims=(-1,))
         TN = torch.cumsum(evidence_logits[:-1] == 0, dim=-1)
         FN = torch.cumsum(evidence_logits[:-1] == 1, dim=-1)
         
