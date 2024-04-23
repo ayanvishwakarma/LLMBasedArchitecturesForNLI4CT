@@ -185,19 +185,14 @@ if __name__ == '__main__':
         for sample in tqdm(devset):
             with torch.no_grad():
                 entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
-                loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]), 
-                                                        evidence_prob, torch.tensor(sample['label_task2'])))
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
             val_loss = val_loss + loss.item()
-            val_pred[sample['uuid']] = {'Prediction': 'Entailment' if entailment_pred else 'Contradiction',
-                                        'EntailmentProbability': float(entailment_prob.cpu().numpy()[0]),
-                                        'Primary_evidence_index': [int(i) for i, x, y in enumerate(zip(entailment_pred, sample['premise_ids'])) 
-                                                                   if y == 1 and x == 1],
-                                        'Primary_evidence_prob': [float(x) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 1]}
-            if sample['type'] == 'Comparison':
-                offset =  sum([1 if x == 1 else 0 for x in sample['premise_ids']])
-                val_pred[sample['uuid']]['Secondary_evidence_index'] = [int(i) - offset for i, x, y in enumerate(zip(entailment_pred, sample['premise_ids'])) 
-                                                                        if y == 2 and x == 1]
-                val_pred[sample['uuid']]['Secondary_evidence_prob'] = [float(x) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 2]
+            compute_and_save_predictions(train_pred, sample, 
+                             entailment_pred.detach().cpu().numpy(), 
+                             entailment_prob.detach().cpu().numpy(),
+                             evidence_pred.detach().cpu().numpy(),
+                             evidence_prob.detach().cpu().numpy())
 
         # Calculate mean loss of training data and validation data
         train_epoch_loss.append(train_loss/len(trainset))
