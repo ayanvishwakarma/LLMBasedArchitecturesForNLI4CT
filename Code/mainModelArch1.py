@@ -195,8 +195,8 @@ if __name__ == '__main__':
                                          evidence_prob.detach().cpu().numpy())
 
         # Calculate mean loss of training data and validation data
-        train_epoch_loss.append(train_loss/len(trainset))
-        val_epoch_loss.append(val_loss/len(devset))
+        train_epoch_loss.append(train_loss*args.batch_size/len(trainset))
+        val_epoch_loss.append(val_loss*args.batch_size/len(devset))
 
         # Metrics
         with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
@@ -288,7 +288,7 @@ if __name__ == '__main__':
         with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
             targets = json.dump(pred_dict, file)
 
-    result['test_loss'] = test_loss/len(testset)   
+    result['test_loss'] = test_loss*args.batch_size/len(testset)   
 
     # ------------------------------Save results to a file------------------------------
     with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
