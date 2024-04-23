@@ -122,6 +122,7 @@ class ModelArchitecture1(Module):
             text_embed += pos_embed
         
         head1_output, evidence_prob = self.head1(text_embed)
+        print(head1_output.shape, evidence_prob.shape)
         if self.training:
             entailment_labels = torch.tensor(data_dict['label_task2'])
             evidence_inds = torch.where(entailment_labels)[0]
