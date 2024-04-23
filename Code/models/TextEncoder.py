@@ -49,6 +49,5 @@ class TextEncoder(Module):
                                                            return_token_type_ids=True,
                                                            add_special_tokens=True,
                                                            truncation=True,
-                                                           max_length=self.MAX_SEQ_LEN,
-                                                           device=self.device)
+                                                           max_length=self.MAX_SEQ_LEN)
         return self.linear(self.model(**tokenized_texts)[:, 0, :])
