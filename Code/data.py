@@ -56,11 +56,11 @@ class DatasetNLI4CT(Dataset):
             text_ids = [text_ids[i] for i, x in range(len(labels_task2)) if x]
             labels_task2 = [labels_task2[i] for i, x in range(len(labels_task2)) if x] 
         
-        ouput_data = {'uuid': uuid,
+        output_data = {'uuid': uuid,
                       'type': data_inst['Type'],
                       'hypothesis': data_inst['Statement'],
                       'premises': texts,
                       'premise_ids': text_ids,
                       'label_task1': int(data_inst['Label'] == 'Entailment'),
                       'label_task2': labels_task2} 
-        return ouput_data
+        return output_data
