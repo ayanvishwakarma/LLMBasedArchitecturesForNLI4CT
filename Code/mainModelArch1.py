@@ -30,7 +30,7 @@ def get_loss_fn(args):
 
 def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_prob, evidence_pred, evidence_prob):            
     pred_dict[sample['uuid']] = {'Prediction': 'Entailment' if entailment_pred else 'Contradiction',
-                                 'EntailmentProbability': float(entailment_prob[0]),
+                                 'EntailmentProbability': float(entailment_prob),
                                  'Primary_evidence_index': [int(i) for i, x, y in enumerate(zip(entailment_pred, sample['premise_ids'])) 
                                                             if y == 1 and x == 1],
                                  'Primary_evidence_prob': [float(x) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 1]}
@@ -39,6 +39,7 @@ def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_
         pred_dict[sample['uuid']]['Secondary_evidence_index'] = [int(i) - offset for i, x, y in enumerate(zip(entailment_pred, sample['premise_ids'])) 
                                                                   if y == 2 and x == 1]
         pred_dict[sample['uuid']]['Secondary_evidence_prob'] = [float(x) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 2]
+    print(pred_dict)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
