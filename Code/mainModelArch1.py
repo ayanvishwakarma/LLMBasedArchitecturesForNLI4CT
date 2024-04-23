@@ -216,11 +216,11 @@ if __name__ == '__main__':
         val_task1_F1.append(val_metrics['Task1-Macro-F1'])
         val_task2_F1.append(val_metrics['Task2-F1'])
         
-        print("Train Loss: ", train_epoch_loss[e], "\t Val Loss: ", val_epoch_loss[e])
-        print("Train Task1-Macro-F1: ", train_metrics['Task1-Macro-F1'], "\t Val Task1-Macro-F1: ", val_metrics['Task1-Macro-F1'])
-        print("Train Task2-F1: ", train_metrics['Task2-F1'], "\t Val Task2-F1: ", val_metrics['Task2-F1'])
-        print("Train Task1-Entailment-F1: ", train_metrics['Task1-Entailment-F1'], "\t Val Task1-Entailment-F1: ", val_metrics['Task1-Entailment-F1'])
-        print("Train Task1-Contradiction-F1: ", train_metrics['Task1-Contradiction-F1'], "\t Val Task1-Contradiction-F1: ", val_metrics['Task1-Contradiction-F1'])
+        print(f"Train Loss: {train_epoch_loss[e]:.6f} \t Val Loss: {val_epoch_loss[e]:.6f}")
+        print(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:.6f} \t Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:.6f}")
+        print(f"Train Task2-F1: {train_metrics['Task2-F1']:.6f} \t Val Task2-F1: {val_metrics['Task2-F1']:.6f}")
+        print(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:.6f} \t Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:.6f}")
+        print(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:.6f} \t Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:.6f}")
 
         # early stopping
         early_stopping(val_metrics['Task1-Macro-F1'], model)
