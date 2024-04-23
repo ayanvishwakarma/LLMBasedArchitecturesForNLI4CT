@@ -135,9 +135,8 @@ class ModelArchitecture1(Module):
     
     def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits):
         sorted_inds = torch.argsort(torch.tensor(entailment_logits))
-        print(sorted_inds)
-        entailment_labels = torch.tensor(entailment_labels[sorted_inds], dtype=torch.int32)
-        entailment_logits = torch.tensor(entailment_logits[sorted_inds], dtype=torch.float32)
+        entailment_labels = torch.tensor(entailment_labels, dtype=torch.int32)[sorted_inds]
+        entailment_logits = torch.tensor(entailment_logits, dtype=torch.float32)[sorted_inds]
         
         thresholds = (entailment_logits[:-1] + entailment_logits[1:]) / 2
         TP = torch.cumsum(entailment_labels[::-1][:-1] == 1, dim=-1)[::-1]
