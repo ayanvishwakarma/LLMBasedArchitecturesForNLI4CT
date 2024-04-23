@@ -39,7 +39,7 @@ def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_
         offset =  sum([1 if x == 1 else 0 for x in sample['premise_ids']])
         evidence_inds = [int(i) - offset for i, x, y in zip(range(len(evidence_pred)), evidence_pred, sample['premise_ids']) if y == 2 and x == 1]
         evidence_prob = [float(x) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 2]
-        print([float(x), float(y) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 2])
+        print([(float(x), float(y)) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 2])
         pred_dict[sample['uuid']]['Secondary_evidence_index'] = evidence_inds,
         pred_dict[sample['uuid']]['Secondary_evidence_prob'] = evidence_prob
     print(sample, pred_dict)
