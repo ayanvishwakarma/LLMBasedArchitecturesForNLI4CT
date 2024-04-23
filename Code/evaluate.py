@@ -25,7 +25,7 @@ def task1_metrics(targets, predictions, uuids, args):
     metrics_dict['Task1-Macro-F1'] = f1_score(true_entail, pred_entail, average='macro')
 
     bce_score = BinaryCalibrationError(n_bins=args.n_bins, norm='l1')
-    metrics_dict['Task1-Calibration'] = float(bce_score(torch.tensor(prob_entail), torch.tensor(true_entail)).cpu().numpy()[0])
+    metrics_dict['Task1-Calibration'] = float(bce_score(torch.tensor(prob_entail), torch.tensor(true_entail)))
     return metrics_dict
 
 def task2_metrics(targets, predictions, uuids, args):
