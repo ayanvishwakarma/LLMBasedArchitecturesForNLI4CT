@@ -7,7 +7,7 @@ import torch.optim as optim
 import pickle
 import collections
 import time
-import os
+import json
 import argparse
 
 from data import DatasetNLI4CT
