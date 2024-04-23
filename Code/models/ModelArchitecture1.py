@@ -114,7 +114,7 @@ class ModelArchitecture1(Module):
         
     def forward(self, data_dict):
         text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] \
-                     + data_dict['hypothesis_premise_pairs']
+                     + data_dict['premises']
         text_embed = self.text_encoder(text_input)
 
         if self.args.pos_emb is not None:
