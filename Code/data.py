@@ -6,6 +6,7 @@ import json
 class DatasetNLI4CT(Dataset):
     def __init__(self, root_dir, split_name, args, **kwargs):
         super().__init__(**kwargs)
+        self.data_ablation = args.data_ablation
         self.root_dir = __file__ if root_dir is None else root_dir
         
         with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
@@ -45,6 +46,15 @@ class DatasetNLI4CT(Dataset):
                 text_ids.extend([2 for i in range(len(section_text))])
                 evidence_inds = set(data_inst['Secondary_evidence_index'])
                 labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
+
+        if self.data_ablation == 'hypothesis-only':
+            texts = []
+            text_ids = []
+            labels_task2 = []
+        elif self.data_ablation == 'gold-evidence':
+            texts = [texts[i] for i, x in range(len(labels_task2)) if x]
+            text_ids = [text_ids[i] for i, x in range(len(labels_task2)) if x]
+            labels_task2 = [labels_task2[i] for i, x in range(len(labels_task2)) if x] 
         
         ouput_data = {'uuid': uuid,
                       'hypothesis': data_inst['Statement'],
