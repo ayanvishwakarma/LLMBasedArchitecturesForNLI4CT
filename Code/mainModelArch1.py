@@ -16,7 +16,7 @@ from evaluate import evaluate_predictions
 def get_loss_fn(args):
     def loss_fn(pred_task1, true_task1, pred_task2, true_task2):
         if args.loss == 'ce':
-            return args.lambda * nn.BCELoss(pred_task1, true_task1) + (1.0 - args.lambda) * nn.BCELoss(pred_task2, true_task2)
+            return args.Lambda * nn.BCELoss(pred_task1, true_task1) + (1.0 - args.Lambda) * nn.BCELoss(pred_task2, true_task2)
         # elif args.loss == 'focal':
         #     pass
     return loss_fn
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     
     # Training args
     parser.add_argument('--loss', default='ce', type=str, help='The loss function to use. Default ce(cross-entropy)', choices['ce', 'focal'])
-    parser.add_argument('--lambda', default=0.5, type=float, help='The lambda value for task1/task2 loss aggregation. Default 0.5')
+    parser.add_argument('--Lambda', default=0.5, type=float, help='The lambda value for task1/task2 loss aggregation. Default 0.5')
     parser.add_argument('--lr', default=0.0005, type=float, help='The learning rate. Default 0.0005')
     parser.add_argument('--bs', default=32, type=int, help='The batch size. Default 32')
     parser.add_argument('--epochs', default=8, type=int, help'Number of epochs to run the model. Default 8')
