@@ -40,6 +40,7 @@ def task2_metrics(targets, predictions, uuids, args):
         FP += sum([ind not in true_evidence_inds for ind in predictions[uuid]['Primary_evidence_index']])
         FN += sum([ind not in predicted_evidence_inds for ind in targets[uuid]['Primary_evidence_index']])
         if targets[uuid]['Type'] == 'Comparison':
+            print(predictions[uuid])
             print(predictions[uuid]['Secondary_evidence_index'])
             true_evidence_inds = set(targets[uuid]['Secondary_evidence_index'])
             predicted_evidence_inds = set(predictions[uuid]['Secondary_evidence_index'])
