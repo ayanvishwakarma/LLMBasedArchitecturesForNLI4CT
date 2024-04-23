@@ -16,9 +16,13 @@ from utils import *
 from models import ModelArchitecture1
 
 def get_loss_fn(args):
+    if args.loss == 'ce':
+        loss = nn.CrossEntropyLoss()
     def loss_fn(pred_task1, true_task1, pred_task2, true_task2):
         if args.loss == 'ce':
-            return args.Lambda * nn.BCELoss()(pred_task1, true_task1) + (1.0 - args.Lambda) * nn.BCELoss()(pred_task2, true_task2)
+            pred_task1 = torch.cat([1 - pred_task1, pred_task1], dim=-1)
+            pred_task2 = torch.cat([1 - pred_task2, pred_task2], dim=-1)
+            return args.Lambda * loss(pred_task1, true_task1) + (1.0 - args.Lambda) * loss(pred_task2, true_task2)
         # elif args.loss == 'focal':
         #     pass
     return loss_fn
