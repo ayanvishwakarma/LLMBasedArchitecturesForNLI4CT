@@ -6,7 +6,7 @@ import json
 class DatasetNLI4CT(Dataset):
     def __init__(self, root_dir, split_name, args, **kwargs):
         super().__init__(**kwargs)
-        self.root_dir = root_dir
+        self.root_dir = __file__ if root_dir is None else root_dir
         
         with open(f'/kaggle/working/LLMBasedArchitecturesForNLI4CT/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
