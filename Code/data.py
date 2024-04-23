@@ -11,7 +11,7 @@ class DatasetNLI4CT(Dataset):
         
         with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
-        self.uuids = list(self.data.keys())
+        self.uuids = list(self.data.keys())[:100]
         print(f'Number of instances in {split_name}: {len(self.uuids)}')
     
     def __len__(self):
