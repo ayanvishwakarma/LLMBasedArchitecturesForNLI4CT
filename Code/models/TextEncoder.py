@@ -15,6 +15,7 @@ class TextEncoder(Module):
         self.model = AutoModel.from_pretrained(self.llm_path)
         self.tokenizer = AutoTokenizer.from_pretrained(self.llm_path)
         self.MAX_SEQ_LEN = args.MAX_SEQ_LEN
+        self.device_item = nn.Parameter(torch.tensor(0.0))
         self.linear = nn.Linear(self.config.hidden_size, out_size, 
                                 bias=True, dtype=torch.float32)
         
@@ -41,7 +42,7 @@ class TextEncoder(Module):
             device_ids = [int(x) for x in args.gpu_ids.split(',')]
             self.model = nn.DataParallel(self.model, device_ids=device_ids)
         
-    def forward(self, texts, device):
+    def forward(self, texts):
         tokenized_texts = self.tokenizer.batch_encode_plus(texts, 
                                                            padding='longest',
                                                            return_tensors='pt',
@@ -50,5 +51,5 @@ class TextEncoder(Module):
                                                            add_special_tokens=True,
                                                            truncation=True,
                                                            max_length=self.MAX_SEQ_LEN)
-        tokenized_texts = {key: value.to(device) for key, value in tokenized_texts.items()}
+        tokenized_texts = {key: value.to(self.device_item.device) for key, value in tokenized_texts.items()}
         return self.linear(self.model(**tokenized_texts)[:, 0, :])
