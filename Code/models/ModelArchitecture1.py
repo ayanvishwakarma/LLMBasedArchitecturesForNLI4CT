@@ -153,12 +153,7 @@ class ModelArchitecture1(Module):
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         self.register_buffer('thresh_entailment', thresholds[torch.argmax(macro_F1)])
 
-        import matplotlib.pyplot as plt
-        plt.scatter(thresholds, macro_F1)
-        plt.scatter(thresholds, TP)
-        plt.scatter(thresholds, TN)
-        plt.scatter(thresholds, FP)
-        plt.scatter(thresholds, FN)
+        print(thresholds, TP, TN, FP, FN, precision_entailment, recall_entailment, F1_entailment)
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits))
         evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32)[sorted_inds]
