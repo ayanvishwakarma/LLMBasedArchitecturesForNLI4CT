@@ -216,11 +216,11 @@ if __name__ == '__main__':
         val_task1_F1.append(val_metrics['Task1-Macro-F1'])
         val_task2_F1.append(val_metrics['Task2-F1'])
         
-        print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:10.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:10.6f}"))
-        print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:10.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:10.6f}"))
-        print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:10.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:10.6f}"))
-        print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:10.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:10.6f}"))
-        print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:10.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:10.6f}"))
+        print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
 
         # early stopping
         early_stopping(val_metrics['Task1-Macro-F1'], model)
