@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu_no', default=0, type=int, help='The gpu id to use. Default 0')
     parser.add_argument('--patience_es', default=5, type=int, help='Patience of early stopping. Default 5')
     parser.add_argument('--delta_es', default=0.0, type=float, help='Delta of early stopping. Default 0.0')
-    parser.add_argument('--scheduler', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
+    parser.add_argument('--scheduler_factor', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
   
     args = parser.parse_args()
     assert(0.0 <= args.Lambda <= 1.0)
