@@ -174,9 +174,9 @@ if __name__ == '__main__':
                                          evidence_pred.detach().cpu().numpy(),
                                          evidence_prob.detach().cpu().numpy())
             train_task1_labels.append(sample['label_task1'])
-            train_task1_logits.extend([float(x) for x in entailment_prob.cpu().numpy()])
+            train_task1_logits.extend([float(x) for x in entailment_prob.detach().cpu().numpy()])
             train_task2_labels.extend(sample['label_task2'])
-            train_task2_logits.extend([float(x) for x in evidence_prob.cpu().numpy()])
+            train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         model.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
         end_time = time.time()
         epoch_time.append(end_time - st_time)
