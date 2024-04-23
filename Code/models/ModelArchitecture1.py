@@ -5,7 +5,7 @@ from torch.nn import Module
 import numpy as np
 import os
 
-from TextEncoder import TextEncoder
+from models import TextEncoder
 
 def head_factory(args, comp_name):
     assert (self.comp_name in ['head1', 'head2'])
