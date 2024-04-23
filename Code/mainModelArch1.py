@@ -16,8 +16,7 @@ from evaluate import evaluate_predictions
 def get_loss_fn(args):
     def loss_fn(pred_task1, true_task1, pred_task2, true_task2):
         if args.loss == 'ce':
-            return args.lambda * nn.BCELoss(pred_task1, true_task1) \
-                   + (1.0 - args.lambda) * nn.BCELoss(pred_task2, true_task2)
+            return args.lambda * nn.BCELoss(pred_task1, true_task1) + (1.0 - args.lambda) * nn.BCELoss(pred_task2, true_task2)
         # elif args.loss == 'focal':
         #     pass
     return loss_fn
