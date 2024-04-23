@@ -43,7 +43,7 @@ class EarlyStopping:
     def save_checkpoint(self, score, model):
         """Saves model when metric value increases."""
         if self.verbose:
-            print(f'Metric-score increased ({self.score:.6f} --> {score:.6f}).  Saving model ...')
+            print(f'Metric-score increased ({self.score_max:.6f} --> {score:.6f}).  Saving model ...')
         torch.save(model.state_dict(), self.save_path)
         self.score_max = score
 
