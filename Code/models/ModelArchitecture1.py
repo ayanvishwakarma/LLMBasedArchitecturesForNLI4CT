@@ -33,6 +33,8 @@ class Identity(Module):
         prob = self.classifier(inputs).squeeze(-1)
         if self.comp_name == 'head2':
             prob = prob[0]
+        else:
+            prob = prob[1:]
         return inputs, prob
         
 class BiLSTM(Module):
@@ -56,6 +58,8 @@ class BiLSTM(Module):
         prob = self.classifier(encoded_inputs).squeeze(-1)
         if self.comp_name == 'head2':
             prob = prob[0]
+        else:
+            prob = prob[1:]
         return encoded_inputs, prob
     
 class Transformer(Module):
@@ -80,6 +84,8 @@ class Transformer(Module):
         prob = self.classifier(encoded_inputs).squeeze(-1)
         if self.comp_name == 'head2':
             prob = prob[0]
+        else:
+            prob = prob[1:]
         return encoded_inputs, prob
 
 class ModelArchitecture1(Module):
