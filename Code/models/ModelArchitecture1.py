@@ -113,7 +113,7 @@ class ModelArchitecture1(Module):
             return w
         
     def forward(self, data_dict):
-        text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] 
+        text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] \
                      + data_dict['hypothesis_premise_pairs']
         text_embed = self.text_encoder(text_input)
 
