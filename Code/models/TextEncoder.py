@@ -41,7 +41,7 @@ class TextEncoder(Module):
             device_ids = [int(x) for x in args.gpu_ids.split(',')]
             self.model = nn.DataParallel(self.model, device_ids=device_ids)
         
-    def forward(self, texts):
+    def forward(self, texts, device):
         tokenized_texts = self.tokenizer.batch_encode_plus(texts, 
                                                            padding='longest',
                                                            return_tensors='pt',
@@ -50,4 +50,5 @@ class TextEncoder(Module):
                                                            add_special_tokens=True,
                                                            truncation=True,
                                                            max_length=self.MAX_SEQ_LEN)
+        tokenized_texts = {key: value.to(device) for key, value in tokenized_texts.items()}
         return self.linear(self.model(**tokenized_texts)[:, 0, :])
