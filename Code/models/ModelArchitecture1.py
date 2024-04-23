@@ -154,8 +154,11 @@ class ModelArchitecture1(Module):
         
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         self.register_parameter(name='thresh_entailment', param=thresholds[torch.argmax(macro_F1)])
+
+        import matplotlib.pyplot as plt
+        plt.scatter(thresholds, macro_F1)
         
-        sorted_inds = torch.argsort(evidence_logits)
+        sorted_inds = torch.argsort(torch.tensor(evidence_logits))
         evidence_labels = torch.tensor(evidence_labels[sorted_inds], dtype=torch.int32)
         evidence_logits = torch.tensor(evidence_logits[sorted_inds], dtype=torch.float32)
         
