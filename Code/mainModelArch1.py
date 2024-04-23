@@ -65,7 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('--Lambda', default=0.5, type=float, help='The lambda value for task1/task2 loss aggregation. Default 0.5')
     parser.add_argument('--lr', default=0.0005, type=float, help='The learning rate. Default 0.0005')
     parser.add_argument('--bs', default=32, type=int, help='The batch size. Default 32')
-    parser.add_argument('--epochs', default=8, type=int, help'Number of epochs to run the model. Default 8')
+    parser.add_argument('--epochs', default=8, type=int, help='Number of epochs to run the model. Default 8')
     parser.add_argument('--cuda', default=False, action=argparse.BooleanOptionalAction, help='True if using gpu. Default False')
     parser.add_argument('--gpu_no', default=0, type=int, help='The gpu id to use. Default 0')
     parser.add_argument('--patience_es', default=5, type=int, help='Patience of early stopping. Default 5')
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--scheduler', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
   
     args = parser.parse_args()
-    assert(0.0 <= args.lambda <= 1.0)
+    assert(0.0 <= args.Lambda <= 1.0)
     
     # ------------------------------Result Address------------------------------
     root_dir = __file__
