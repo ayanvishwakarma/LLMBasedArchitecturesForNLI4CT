@@ -85,6 +85,7 @@ class Transformer(Module):
 class ModelArchitecture1(Module):
     def __init__(self, args, **kwargs):
         super().__init__(**kwargs)
+        self.args = args
         self.text_encoder = TextEncoder(args, args.hidden_size)
         self.head1 = head_factory(args, 'head1')
         self.thresh_evidence = nn.Parameter(torch.tensor(0.0, dtype=torch.float32), 
@@ -92,10 +93,27 @@ class ModelArchitecture1(Module):
         self.head2 = head_factory(args, 'head2')
         self.thresh_entailment = nn.Parameter(torch.tensor(0.0, dtype=torch.float32), 
                                               requires_grad=False)
+
+        if self.args.pos_emb == 'learnable':
+            self.pos_weights = nn.Linear(1, args.hidden_size, bias=True, dtype=torch.float32)
+        
+    def positional_embedding(self, pos_ids):
+        if self.args.pos_emb == 'static':
+            w = pos_ids.unsqueeze(-1) / (10000 ** torch.linspace(0, 1, args.hidden_size//2))
+            return torch.cat([torch.sin(w), torch.cos(w)], dim=-1)
+        elif self.args.pos_emb == 'learnable':
+            w = self.pos_weights(pos_ids.unsqueeze(-1))
+            w[1:] = torch.sin(w[1:])
+            return w
         
     def forward(self, data_dict):
-        text_input = data_dict['hypothesis'] + data_dict['hypothesis_premise_pairs']
+        text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] 
+                     + data_dict['hypothesis_premise_pairs']
         text_embed = self.text_encoder(text_input)
+
+        if self.args.pos_emb is not None:
+            pos_emb = self.positional_embedding(torch.arange(text_embed.shape[0], dtype=torch.float32))
+            text_embed += pos_embed
         
         head1_output, evidence_prob = self.head1(text_embed)
         if self.training:
