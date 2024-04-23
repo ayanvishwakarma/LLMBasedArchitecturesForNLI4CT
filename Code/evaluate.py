@@ -12,7 +12,7 @@ def task1_metrics(targets, predictions, uuids, args):
     prob_entail = [predictions[uuid]['EntailmentProbability'] for uuid in uuids]
 
     true_contra = [targets[uuid]['Label'] == 'Contradiction' for uuid in uuids]
-    pred_contra = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
+    pred_contra = [predictions[uuid]['Prediction'] == 'Contradiction' for uuid in uuids]
     prob_contra = [1.0 - predictions[uuid]['EntailmentProbability'] for uuid in uuids]
 
     metrics_dict = {}
@@ -45,9 +45,9 @@ def task2_metrics(targets, predictions, uuids, args):
             TP += sum([ind in true_evidence_inds for ind in predictions[uuid]['Secondary_evidence_index']])
             FP += sum([ind not in true_evidence_inds for ind in predictions[uuid]['Secondary_evidence_index']])
             FN += sum([ind not in predicted_evidence_inds for ind in targets[uuid]['Secondary_evidence_index']])
-    p_score = TP / (TP + FP)
-    r_score = TP / (TP + FN)
-    F1 = 2 * p_score * r_score / (p_score + r_score)
+    p_score = TP / (TP + FP + 1e-8)
+    r_score = TP / (TP + FN + 1e-8)
+    F1 = 2 * p_score * r_score / (p_score + r_score + 1e-8)
   
     metrics_dict = {}
     metrics_dict['Task2-precision'] = p_score
