@@ -103,15 +103,15 @@ if __name__ == '__main__':
 
     # ------------------------------Parameters to save------------------------------
     train_epoch_loss = []
+    train_task1_F1_entail = []
+    train_task1_F1_contra = []
     train_task1_F1 = []
     train_task2_F1 = []
-    train_faithfulness = []
-    train_consistency = []
     val_epoch_loss = []
+    val_task1_F1_entail = []
+    val_task1_F1_contra = []
     val_task1_F1 = []
     val_task2_F1 = []
-    val_faithfulness = []
-    val_consistency = []
     epoch_time = []
 
     # ------------------------------Prepare DataLoaders------------------------------
@@ -206,22 +206,21 @@ if __name__ == '__main__':
             targets = json.load(file)
         val_metrics = evaluate_predictions(targets, val_pred, args)
 
-        print(train_metrics)
+        train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
+        train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
         train_task1_F1.append(train_metrics['Task1-Macro-F1'])
         train_task2_F1.append(train_metrics['Task2-F1'])
-        train_faithfulness.append(train_metrics['Task1-Consistency'])
-        train_consistency.append(train_metrics['Task1-Faithfulness'])
         
+        val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
+        val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
         val_task1_F1.append(val_metrics['Task1-Macro-F1'])
         val_task2_F1.append(val_metrics['Task2-F1'])
-        val_faithfulness.append(val_metrics['Task1-Consistency'])
-        val_consistency.append(val_metrics['Task1-Faithfulness'])      
         
         print("Train Loss: ", train_epoch_loss[e], "\t Val Loss: ", val_epoch_loss[e])
         print("Train Task1-Macro-F1: ", train_metrics['Task1-Macro-F1'], "\t Val Task1-Macro-F1: ", val_metrics['Task1-Macro-F1'])
         print("Train Task2-F1: ", train_metrics['Task2-F1'], "\t Val Task2-F1: ", val_metrics['Task2-F1'])
-        print("Train Task1-Consistency: ", train_metrics['Task1-Consistency'], "\t Val Task1-Consistency: ", val_metrics['Task1-Consistency'])
-        print("Train Task1-Faithfulness: ", train_metrics['Task1-Faithfulness'], "\t Val Task1-Faithfulness: ", val_metrics['Task1-Faithfulness'])
+        print("Train Task1-Entailment-F1: ", train_metrics['Task1-Entailment-F1'], "\t Val Task1-Entailment-F1: ", val_metrics['Task1-Entailment-F1'])
+        print("Train Task1-Contradiction-F1: ", train_metrics['Task1-Contradiction-F1'], "\t Val Task1-Contradiction-F1: ", val_metrics['Task1-Contradiction-F1'])
 
         # early stopping
         early_stopping(val_metrics['Task1-Macro-F1'], model)
@@ -232,18 +231,18 @@ if __name__ == '__main__':
 
     # ------------------------------Save result on train and val data------------------------------
     result = {'args': args,
-              
+
+              'train_task1_F1_entail': train_task1_F1_entail,
+              'train_task1_F1_contra': train_task1_F1_contra,
               'train_epoch_loss': train_epoch_loss,
               'train_task1_F1': train_task1_F1,
               'train_task2_F1': train_task2_F1,
-              'train_faithfulness': train_faithfulness,
-              'train_consistency': train_consistency,
-              
+
+              'val_task1_F1_entail': val_task1_F1_entail,
+              'val_task1_F1_contra': val_task1_F1_contra,
               'val_epoch_loss': val_epoch_loss,
               'val_task1_F1': val_task1_F1,
               'val_task2_F1': val_task2_F1,
-              'val_faithfulness': val_faithfulness,
-              'val_consistency': val_consistency,
               
               'epoch_time': epoch_time}
 
