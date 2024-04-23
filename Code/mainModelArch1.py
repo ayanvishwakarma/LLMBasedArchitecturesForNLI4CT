@@ -23,7 +23,6 @@ def get_loss_fn(args):
         prob_task2, true_task2 = prob_task2.view(-1, 1), true_task2.view(-1)
         prob_task1 = torch.cat([1 - prob_task1, prob_task1], dim=-1)
         prob_task2 = torch.cat([1 - prob_task2, prob_task2], dim=-1)
-        print(prob_task1.shape, prob_task2.shape, true_task1.shape, true_task2.shape)
         return args.Lambda * loss(prob_task1, true_task1) + (1.0 - args.Lambda) * loss(prob_task2, true_task2)
         # elif args.loss == 'focal':
         #     pass
@@ -148,7 +147,7 @@ if __name__ == '__main__':
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
             scaler.scale(loss).backward()
-            batch_processed = (batch_processed + 1) % batch_size
+            batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
                 scaler.step(optimizer)
                 scaler.update()
