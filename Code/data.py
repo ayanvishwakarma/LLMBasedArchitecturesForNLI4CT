@@ -47,8 +47,9 @@ class DatasetNLI4CT(Dataset):
                 labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
         
         ouput_data = {'uuid': uuid,
-                      'texts': texts,
-                      'text_ids': text_ids,
+                      'hypothesis': data_inst['Statement'],
+                      'premises': texts,
+                      'premise_ids': text_ids,
                       'label_task1': int(data_inst['Label'] == 'Entailment'),
                       'label_task2': labels_task2} 
         return ouput_data
