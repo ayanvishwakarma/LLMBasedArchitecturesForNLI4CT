@@ -55,8 +55,8 @@ def task1_perturbed_metrics(targets, predictions, uuids, args):
     preserving_uuids = [uuid for uuid in uuids if targets[uuid]['Causal_type'][0] == 'Preserving']
     altering_uuids = [uuid for uuid in uuids if targets[uuid]['Causal_type'][0] == 'Altering']
 
-    consistency = sum([predictions[uuid]['Prediction'] == predictions[targets[uuid]['Causal_type'][1]]['Prediction'] uuid for uuids in preserving_uuids]) / len(preserving_uuids)
-    faithfulness = sum([predictions[uuid]['Prediction'] != targets[targets[uuid]['Causal_type'][1]]['Label'] uuid for uuids in altering_uuids]) / len(altering_uuids)
+    consistency = sum([predictions[uuid]['Prediction'] == predictions[targets[uuid]['Causal_type'][1]]['Prediction'] for uuids in preserving_uuids]) / len(preserving_uuids)
+    faithfulness = sum([predictions[uuid]['Prediction'] != targets[targets[uuid]['Causal_type'][1]]['Label'] for uuids in altering_uuids]) / len(altering_uuids)
 
     metrics_dict = {}
     metrics_dict['Task1-Consistency'] = consistency
