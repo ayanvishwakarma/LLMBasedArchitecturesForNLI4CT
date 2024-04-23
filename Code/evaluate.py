@@ -6,6 +6,7 @@ import os
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 def task1_metrics(targets, predictions, uuids, args):
+    print([(uuid in targets and uuid in predictions) for uuid in uuids])
     assert all([(uuid in targets and uuid in predictions) for uuid in uuids])
     true = [targets[uuid]['Label'] == 'Entailment' for uuid in uuids]
     pred = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
