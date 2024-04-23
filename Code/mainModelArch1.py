@@ -19,7 +19,6 @@ def get_loss_fn(args):
     if args.loss == 'ce':
         loss = nn.CrossEntropyLoss()
     def loss_fn(prob_task1, true_task1, prob_task2, true_task2):
-        device = pred_task1.device
         prob_task1, true_task1 = prob_task1.unsqueeze(-1), true_task1.unsqueeze(-1)
         prob_task1 = torch.cat([1 - prob_task1, prob_task1], dim=-1)
         prob_task2 = torch.cat([1 - prob_task2, prob_task2], dim=-1)
@@ -144,8 +143,8 @@ if __name__ == '__main__':
         for sample in tqdm(trainset):
             with torch.autocast(device_type=device.type, dtype=torch.float16):
                 entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']))
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
             scaler.scale(loss).backward()
             batch_processed = (batch_processed + 1) % batch_size
             if batch_processed == 0:
