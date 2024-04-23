@@ -160,7 +160,7 @@ class ModelArchitecture1(Module):
         plt.scatter(thresholds, FP)
         plt.scatter(thresholds, FN)
 
-        hyhiu=9
+        hyhiu=iuui
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits))
         evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32)[sorted_inds]
