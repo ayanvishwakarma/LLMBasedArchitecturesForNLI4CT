@@ -124,7 +124,7 @@ class ModelArchitecture1(Module):
             entailment_labels = torch.tensor(data_dict['label_task2'])
             evidence_inds = torch.where(entailment_labels)[0]
         else:
-            evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)
+            evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0]
         head2_input = head1_output[torch.cat([torch.tensor([0]), evidence_inds], dim=-1)]
         
         head2_output, entailment_prob = self.head2(head2_input)
