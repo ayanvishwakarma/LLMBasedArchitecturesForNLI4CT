@@ -41,7 +41,6 @@ def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_
         seconadary_probs = [float(x) for x, y in zip(evidence_prob, sample['premise_ids']) if y == 2]
         pred_dict[sample['uuid']]['Secondary_evidence_index'] = secondary_inds,
         pred_dict[sample['uuid']]['Secondary_evidence_prob'] = seconadary_probs
-    print(sample, pred_dict)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
