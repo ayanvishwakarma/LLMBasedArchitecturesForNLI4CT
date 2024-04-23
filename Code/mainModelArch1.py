@@ -232,8 +232,7 @@ if __name__ == '__main__':
               'val_faithfulness' = val_faithfulness,
               'val_consistency' = val_consistency,
               
-              'epoch_time': epoch_time
-    }
+              'epoch_time': epoch_time}
 
     # ------------------------------Load model for testing------------------------------
     best_model_auprc = ModelArchitecture1(args)
