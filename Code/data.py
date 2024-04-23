@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset
+import numpy as np
 import json
 
 class DatasetNLI4CT(Dataset):
@@ -27,9 +28,9 @@ class DatasetNLI4CT(Dataset):
             section_text = ctr[data_inst['Section_id']]
             subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
             texts.extend([f'Hypothesis: "{data_inst["Statement"]}", Premise: In Primary CTR {data_inst["Section_id"]} section, ' 
-                          + (f'with subsection heading "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '') 
-                          + f'in line {i} it is given that "{section_text[i]}"' for i in range(len(section_text))])
-            text_ids.extend([0 for i in range(len(section_text))])
+                          + (f'under subsection "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '') 
+                          + f'in line {i} the following text is written "{section_text[i]}"' for i in range(len(section_text))])
+            text_ids.extend([1 for i in range(len(section_text))])
             evidence_inds = set(data_inst['Primary_evidence_index'])
             labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
             
@@ -39,9 +40,9 @@ class DatasetNLI4CT(Dataset):
                 section_text = ctr[data_inst['Section_id']]
                 subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
                 texts.extend([f'Hypothesis: "{data_inst["Statement"]}", Premise: In Secondary CTR {data_inst["Section_id"]} section, ' 
-                              + (f'with subsection heading "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '')
-                              + f'in line {i} it is given that "{section_text[i]}"' for i in range(len(section_text))])
-                text_ids.extend([0 for i in range(len(section_text))])
+                              + (f'under subsection "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '')
+                              + f'in line {i} the following text is written "{section_text[i]}"' for i in range(len(section_text))])
+                text_ids.extend([2 for i in range(len(section_text))])
                 evidence_inds = set(data_inst['Secondary_evidence_index'])
                 labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
         
