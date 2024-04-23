@@ -169,4 +169,4 @@ class ModelArchitecture1(Module):
         recall_evidence = TP / (TP + FN)
         F1_evidence = 2 * precision_evidence * recall_evidence / (precision_evidence + recall_evidence)
         
-        self.register_buffer('thresh_evidence', thesholds[torch.argmax(F1_evidence)])
+        self.register_buffer('thresh_evidence', thresholds[torch.argmax(F1_evidence)])
