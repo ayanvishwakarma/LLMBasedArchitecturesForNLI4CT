@@ -8,7 +8,7 @@ class DatasetNLI4CT(Dataset):
         super().__init__(**kwargs)
         self.root_dir = __file__ if root_dir is None else root_dir
         
-        with open(f'/kaggle/working/LLMBasedArchitecturesForNLI4CT/Data/{split_name}.json', 'r') as file:
+        with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
         self.uuids = list(self.data.keys())
         print(f'Number of instances in {split_name}: {len(self.uuids)}')
@@ -23,7 +23,7 @@ class DatasetNLI4CT(Dataset):
         text_ids = []
         labels_task2 = []
         
-        with open(f'/kaggle/working/LLMBasedArchitecturesForNLI4CT/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
+        with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
             ctr = json.load(file)
             section_text = ctr[data_inst['Section_id']]
             subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
@@ -35,7 +35,7 @@ class DatasetNLI4CT(Dataset):
             labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
             
         if data_inst['Type'] == 'Comparison':
-            with open(f'/kaggle/working/LLMBasedArchitecturesForNLI4CT/Data/CTR json/{data_inst["Secondary_id"]}.json', 'r') as file:
+            with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}.json', 'r') as file:
                 ctr = json.load(file)
                 section_text = ctr[data_inst['Section_id']]
                 subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
