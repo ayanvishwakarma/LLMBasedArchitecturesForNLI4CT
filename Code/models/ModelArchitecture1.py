@@ -94,11 +94,9 @@ class ModelArchitecture1(Module):
         self.args = args
         self.text_encoder = TextEncoder(args, args.hidden_size)
         self.head1 = head_factory(args, 'head1')
-        self.thresh_evidence = nn.Parameter(torch.tensor(0.0, dtype=torch.float32), 
-                                            requires_grad=False)
+        self.register_buffer(name='thresh_evidence', param=torch.tensor(0.0, dtype=torch.float32))
         self.head2 = head_factory(args, 'head2')
-        self.thresh_entailment = nn.Parameter(torch.tensor(0.0, dtype=torch.float32), 
-                                              requires_grad=False)
+        self.register_buffer(name='thresh_entailment', param=torch.tensor(0.0, dtype=torch.float32))
 
         if self.args.pos_emb == 'learnable':
             self.pos_weights = nn.Linear(1, args.hidden_size, bias=True, dtype=torch.float32)
@@ -153,7 +151,7 @@ class ModelArchitecture1(Module):
         F1_contradiction = 2 * precision_contradiction * recall_contradiction / (precision_contradiction + recall_contradiction)
         
         macro_F1 = (F1_entailment + F1_contradiction) / 2
-        self.register_parameter(name='thresh_entailment', param=thresholds[torch.argmax(macro_F1)])
+        self.register_buffer(name='thresh_entailment', param=thresholds[torch.argmax(macro_F1)])
 
         import matplotlib.pyplot as plt
         plt.scatter(thresholds, macro_F1)
@@ -161,7 +159,6 @@ class ModelArchitecture1(Module):
         plt.scatter(thresholds, TN)
         plt.scatter(thresholds, FP)
         plt.scatter(thresholds, FN)
-        
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits))
         evidence_labels = torch.tensor(evidence_labels[sorted_inds], dtype=torch.int32)
@@ -177,4 +174,4 @@ class ModelArchitecture1(Module):
         recall_evidence = TP / (TP + FN)
         F1_evidence = 2 * precision_evidence * recall_evidence / (precision_evidence + recall_evidence)
         
-        self.register_parameter(name='thresh_evidence', param=thesholds[torch.argmax(F1_evidence)])
+        self.register_buffer(name='thresh_evidence', param=thesholds[torch.argmax(F1_evidence)])
