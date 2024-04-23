@@ -31,7 +31,7 @@ def task2_metrics(targets, predictions, uuids, args):
   
     for uuid in uuids:
         true_evidence_inds = set(targets[uuid]['Primary_evidence_index'])
-        predicted_evidence_inds = set(predictions[uuid]['Primary_evidence_index']])
+        predicted_evidence_inds = set(predictions[uuid]['Primary_evidence_index'])
         TP += sum([ind in true_evidence_inds for ind in predictions[uuid]['Primary_evidence_index']])
         FP += sum([ind not in true_evidence_inds for ind in predictions[uuid]['Primary_evidence_index']])
         FN += sum([ind not in predicted_evidence_inds for ind in targets[uuid]['Primary_evidence_index']])
