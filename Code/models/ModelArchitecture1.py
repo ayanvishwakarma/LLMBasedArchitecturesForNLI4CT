@@ -139,8 +139,8 @@ class ModelArchitecture1(Module):
         entailment_logits = torch.tensor(entailment_logits, dtype=torch.float32)[sorted_inds]
         
         thresholds = (entailment_logits[:-1] + entailment_logits[1:]) / 2
-        TP = torch.cumsum(entailment_labels[::-1][:-1] == 1, dim=-1)[::-1]
-        FP = torch.cumsum(entailment_labels[::-1][:-1] == 0, dim=-1)[::-1]
+        TP = torch.flip(torch.cumsum(torch.flip(entailment_labels, dims=(-1,))[:-1] == 1, dim=-1), dims=(-1,))
+        FP = torch.flip(torch.cumsum(torch.flip(entailment_labels, dims=(-1,))[:-1] == 0, dim=-1), dims=(-1,))
         TN = torch.cumsum(entailment_labels[:-1] == 0, dim=-1)
         FN = torch.cumsum(entailment_labels[:-1] == 1, dim=-1)
         
@@ -157,6 +157,11 @@ class ModelArchitecture1(Module):
 
         import matplotlib.pyplot as plt
         plt.scatter(thresholds, macro_F1)
+        plt.scatter(thresholds, TP)
+        plt.scatter(thresholds, TN)
+        plt.scatter(thresholds, FP)
+        plt.scatter(thresholds, FN)
+        
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits))
         evidence_labels = torch.tensor(evidence_labels[sorted_inds], dtype=torch.int32)
