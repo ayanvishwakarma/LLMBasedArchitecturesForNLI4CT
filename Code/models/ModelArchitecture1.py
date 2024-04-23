@@ -92,6 +92,7 @@ class ModelArchitecture1(Module):
     def __init__(self, args, **kwargs):
         super().__init__(**kwargs)
         self.args = args
+        self.device_item = nn.Parameter(torch.tensor([0.0]), requires_grad=False)
         self.text_encoder = TextEncoder(args, args.hidden_size)
         self.head1 = head_factory(args, 'head1')
         self.register_buffer('thresh_evidence', torch.tensor(0.0, dtype=torch.float32))
@@ -111,6 +112,7 @@ class ModelArchitecture1(Module):
             return w
         
     def forward(self, data_dict):
+        device = self.device_item.device
         text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] \
                      + data_dict['premises']
         text_embed = self.text_encoder(text_input)
@@ -125,7 +127,7 @@ class ModelArchitecture1(Module):
             evidence_inds = torch.where(entailment_labels)[0]
         else:
             evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0]
-        head2_input = head1_output[torch.cat([torch.tensor([0]), evidence_inds], dim=-1)]
+        head2_input = head1_output[torch.cat([torch.tensor([0], device=device), evidence_inds], dim=-1)]
         
         head2_output, entailment_prob = self.head2(head2_input)
         
