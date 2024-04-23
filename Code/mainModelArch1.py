@@ -53,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', default=128, type=int, help='The dimension of hidden layers of model. Default 128')
     parser.add_argument('--num_layers_head1', default=4, type=int, help='The number of layers in head1. Default 4')
     parser.add_argument('--num_layers_head2', default=4, type=int, help='The number of layers in head2. Default 4')
+    parser.add_argument('--nhead', default=4, type=int, help='The number of heads in multi-head attention. Default 4')
     parser.add_argument('--dropout', default=0.2, type=float, help='The dropout rate in head1 and head2. Default 0.2')
     parser.add_argument('--pos_emb', default=None, type=str, help='The positional embedding to use in text-embedding output. Default None',
                         choices=[None, 'static', 'learnable'])
