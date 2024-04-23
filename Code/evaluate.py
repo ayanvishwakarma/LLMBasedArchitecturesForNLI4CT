@@ -67,6 +67,7 @@ def task1_perturbed_metrics(targets, predictions, uuids, args):
 def evaluate_predictions(targets, predictions, args):
     control_set_uuids = [uuid for uuid in targets.keys() if 'Intervention' not in targets[uuid]]
     contrast_set_uuids = [uuid for uuid in targets.keys() if 'Intervention' in targets[uuid]]
+    print(control_set_uuids, contrast_set_uuids)
 
     metrics_dict = {}
     if args.evaluate_task1:
