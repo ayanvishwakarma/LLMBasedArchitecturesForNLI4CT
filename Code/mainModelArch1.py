@@ -18,8 +18,9 @@ def get_loss_fn(args):
         if args.loss == 'ce':
             return args.lambda * nn.BCELoss(pred_task1, true_task1) \
                    + (1.0 - args.lambda) * nn.BCELoss(pred_task2, true_task2)
-        elif args.loss == 'focal':
-            pass
+        # elif args.loss == 'focal':
+        #     pass
+    return loss_fn
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
