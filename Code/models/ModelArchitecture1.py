@@ -135,6 +135,7 @@ class ModelArchitecture1(Module):
     
     def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits):
         sorted_inds = torch.argsort(torch.tensor(entailment_logits))
+        print(sorted_inds)
         entailment_labels = torch.tensor(entailment_labels[sorted_inds], dtype=torch.int32)
         entailment_logits = torch.tensor(entailment_logits[sorted_inds], dtype=torch.float32)
         
