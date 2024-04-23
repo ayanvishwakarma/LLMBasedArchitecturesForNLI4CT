@@ -6,7 +6,6 @@ import os
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 def task1_metrics(targets, predictions, uuids, args):
-    print([(uuid in targets and uuid in predictions) for uuid in uuids])
     assert all([(uuid in targets and uuid in predictions) for uuid in uuids])
     true = [targets[uuid]['Label'] == 'Entailment' for uuid in uuids]
     pred = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
@@ -67,14 +66,13 @@ def task1_perturbed_metrics(targets, predictions, uuids, args):
 def evaluate_predictions(targets, predictions, args):
     control_set_uuids = [uuid for uuid in targets.keys() if 'Intervention' not in targets[uuid]]
     contrast_set_uuids = [uuid for uuid in targets.keys() if 'Intervention' in targets[uuid]]
-    print(control_set_uuids, contrast_set_uuids)
 
     metrics_dict = {}
     if args.evaluate_task1:
         metrics_dict = {**metrics_dict, **task1_metrics(targets, predictions, control_set_uuids, args)}
         if len(contrast_set_uuids):
-            metrics_dict = {**metrics_dict, **task1_perturbed_metrics(targets, predictions, uuids, args)}
+            metrics_dict = {**metrics_dict, **task1_perturbed_metrics(targets, predictions, contrast_set_uuids, args)}
     if args.evaluate_task2:
-        metrics_dict = {**metrics_dict, **task2_metrics(targets, predictions, uuids, args)}
+        metrics_dict = {**metrics_dict, **task2_metrics(targets, predictions, control_set_uuids, args)}
 
     return metrics_dict
