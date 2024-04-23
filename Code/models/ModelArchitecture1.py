@@ -142,18 +142,16 @@ class ModelArchitecture1(Module):
         TN = torch.cumsum(entailment_labels[:-1] == 0, dim=-1)
         FN = torch.cumsum(entailment_labels[:-1] == 1, dim=-1)
         
-        precision_entailment = TP / (TP + FP)
-        recall_entailment = TP / (TP + FN)
+        precision_entailment = TP / (TP + FP + 1e-8)
+        recall_entailment = TP / (TP + FN + 1e-8)
         F1_entailment = 2 * precision_entailment * recall_entailment / (precision_entailment + recall_entailment)
         
-        precision_contradiction = TN / (TN + FN)
-        recall_contradiction = TN / (TN + FP)
+        precision_contradiction = TN / (TN + FN + 1e-8)
+        recall_contradiction = TN / (TN + FP + 1e-8)
         F1_contradiction = 2 * precision_contradiction * recall_contradiction / (precision_contradiction + recall_contradiction)
         
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         self.register_buffer('thresh_entailment', thresholds[torch.argmax(macro_F1)])
-
-        print(thresholds, TP, TN, FP, FN, precision_entailment, recall_entailment, F1_entailment)
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits))
         evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32)[sorted_inds]
@@ -165,8 +163,8 @@ class ModelArchitecture1(Module):
         TN = torch.cumsum(evidence_logits[:-1] == 0, dim=-1)
         FN = torch.cumsum(evidence_logits[:-1] == 1, dim=-1)
         
-        precision_evidence = TP / (TP + FP)
-        recall_evidence = TP / (TP + FN)
+        precision_evidence = TP / (TP + FP + 1e-8)
+        recall_evidence = TP / (TP + FN + 1e-8)
         F1_evidence = 2 * precision_evidence * recall_evidence / (precision_evidence + recall_evidence)
         
         self.register_buffer('thresh_evidence', thresholds[torch.argmax(F1_evidence)])
