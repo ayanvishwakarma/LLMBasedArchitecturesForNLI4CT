@@ -161,8 +161,8 @@ class ModelArchitecture1(Module):
         plt.scatter(thresholds, FN)
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits))
-        evidence_labels = torch.tensor(evidence_labels[sorted_inds], dtype=torch.int32)
-        evidence_logits = torch.tensor(evidence_logits[sorted_inds], dtype=torch.float32)
+        evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32)[sorted_inds]
+        evidence_logits = torch.tensor(evidence_logits, dtype=torch.float32)[sorted_inds]
         
         thresholds = (evidence_logits[:-1] + evidence_logits[1:]) / 2
         TP = torch.cumsum(evidence_logits[::-1][:-1] == 1, dim=-1)[::-1]
