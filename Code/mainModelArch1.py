@@ -220,17 +220,17 @@ if __name__ == '__main__':
     # ------------------------------Save result on train and val data------------------------------
     result = {'args': args,
               
-              'train_epoch_loss' = train_epoch_loss,
-              'train_task1_F1' = train_task1_F1,
-              'train_task2_F1' = train_task2_F1,
-              'train_faithfulness' = train_faithfulness,
-              'train_consistency' = train_consistency,
+              'train_epoch_loss': train_epoch_loss,
+              'train_task1_F1': train_task1_F1,
+              'train_task2_F1': train_task2_F1,
+              'train_faithfulness': train_faithfulness,
+              'train_consistency': train_consistency,
               
-              'val_epoch_loss' = val_epoch_loss,
-              'val_task1_F1' = val_task1_F1,
-              'val_task2_F1' = val_task2_F1,
-              'val_faithfulness' = val_faithfulness,
-              'val_consistency' = val_consistency,
+              'val_epoch_loss': val_epoch_loss,
+              'val_task1_F1': val_task1_F1,
+              'val_task2_F1': val_task2_F1,
+              'val_faithfulness': val_faithfulness,
+              'val_consistency': val_consistency,
               
               'epoch_time': epoch_time}
 
