@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_bins', default=10, type=int, help='The number of bins to use in ECE-calibration metric. Default 10')
     
     # Training args
-    parser.add_argument('--loss', default='ce', type=str, help='The loss function to use. Default ce(cross-entropy)', choices['ce', 'focal'])
+    parser.add_argument('--loss', default='ce', type=str, help='The loss function to use. Default ce(cross-entropy)', choices=['ce', 'focal'])
     parser.add_argument('--Lambda', default=0.5, type=float, help='The lambda value for task1/task2 loss aggregation. Default 0.5')
     parser.add_argument('--lr', default=0.0005, type=float, help='The learning rate. Default 0.0005')
     parser.add_argument('--bs', default=32, type=int, help='The batch size. Default 32')
