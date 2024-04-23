@@ -144,11 +144,11 @@ class ModelArchitecture1(Module):
         
         precision_entailment = TP / (TP + FP + 1e-8)
         recall_entailment = TP / (TP + FN + 1e-8)
-        F1_entailment = 2 * precision_entailment * recall_entailment / (precision_entailment + recall_entailment)
+        F1_entailment = 2 * precision_entailment * recall_entailment / (precision_entailment + recall_entailment + 1e-8)
         
         precision_contradiction = TN / (TN + FN + 1e-8)
         recall_contradiction = TN / (TN + FP + 1e-8)
-        F1_contradiction = 2 * precision_contradiction * recall_contradiction / (precision_contradiction + recall_contradiction)
+        F1_contradiction = 2 * precision_contradiction * recall_contradiction / (precision_contradiction + recall_contradiction + 1e-8)
         
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         self.register_buffer('thresh_entailment', thresholds[torch.argmax(macro_F1)])
@@ -165,6 +165,6 @@ class ModelArchitecture1(Module):
         
         precision_evidence = TP / (TP + FP + 1e-8)
         recall_evidence = TP / (TP + FN + 1e-8)
-        F1_evidence = 2 * precision_evidence * recall_evidence / (precision_evidence + recall_evidence)
+        F1_evidence = 2 * precision_evidence * recall_evidence / (precision_evidence + recall_evidence + 1e-8)
         
         self.register_buffer('thresh_evidence', thresholds[torch.argmax(F1_evidence)])
