@@ -28,7 +28,8 @@ def get_loss_fn(args):
         #     pass
     return loss_fn
 
-def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_prob, evidence_pred, evidence_prob):            
+def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_prob, evidence_pred, evidence_prob):  
+    print(sample)
     pred_dict[sample['uuid']] = {'Prediction': 'Entailment' if entailment_pred else 'Contradiction',
                                  'EntailmentProbability': float(entailment_prob),
                                  'Primary_evidence_index': [int(i) for i, x, y in enumerate(zip(entailment_pred, sample['premise_ids'])) 
