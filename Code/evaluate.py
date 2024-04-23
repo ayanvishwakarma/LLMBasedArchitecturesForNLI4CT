@@ -51,7 +51,7 @@ def task2_metrics(targets, predictions, uuids, args):
   
     metrics_dict = {}
     metrics_dict['Task2-precision'] = p_score
-    metrics_dict['Task2-recall'] = f_score
+    metrics_dict['Task2-recall'] = r_score
     metrics_dict['Task2-F1'] = F1 
     return metrics_dict
 
