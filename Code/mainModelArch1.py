@@ -152,34 +152,34 @@ if __name__ == '__main__':
         train_task2_labels = []
         train_task2_logits = []
         
-        model.train()
-        st_time = time.time()
-        batch_processed = 0
-        for sample in tqdm(trainset):
-            with torch.autocast(device_type=device.type, dtype=torch.float16):
-                entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
-            scaler.scale(loss).backward()
-            batch_processed = (batch_processed + 1) % args.batch_size
-            if batch_processed == 0:
-                scaler.step(optimizer)
-                scaler.update()
-                model.zero_grad()
-            train_loss = train_loss + loss.item()
-            compute_and_save_predictions(train_pred, sample, 
-                                         entailment_pred.detach().cpu().numpy(), 
-                                         entailment_prob.detach().cpu().numpy(),
-                                         evidence_pred.detach().cpu().numpy(),
-                                         evidence_prob.detach().cpu().numpy())
-            train_task1_labels.append(sample['label_task1'])
-            train_task1_logits.append(float(entailment_prob))
-            train_task2_labels.extend(sample['label_task2'])
-            train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
-        model.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
-        end_time = time.time()
-        epoch_time.append(end_time - st_time)
-        print("Epoch time: ", epoch_time[e])
+        # model.train()
+        # st_time = time.time()
+        # batch_processed = 0
+        # for sample in tqdm(trainset):
+        #     with torch.autocast(device_type=device.type, dtype=torch.float16):
+        #         entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
+        #         loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+        #                                                evidence_prob, torch.tensor(sample['label_task2']).to(device))
+        #     scaler.scale(loss).backward()
+        #     batch_processed = (batch_processed + 1) % args.batch_size
+        #     if batch_processed == 0:
+        #         scaler.step(optimizer)
+        #         scaler.update()
+        #         model.zero_grad()
+        #     train_loss = train_loss + loss.item()
+        #     compute_and_save_predictions(train_pred, sample, 
+        #                                  entailment_pred.detach().cpu().numpy(), 
+        #                                  entailment_prob.detach().cpu().numpy(),
+        #                                  evidence_pred.detach().cpu().numpy(),
+        #                                  evidence_prob.detach().cpu().numpy())
+        #     train_task1_labels.append(sample['label_task1'])
+        #     train_task1_logits.append(float(entailment_prob))
+        #     train_task2_labels.extend(sample['label_task2'])
+        #     train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
+        # model.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
+        # end_time = time.time()
+        # epoch_time.append(end_time - st_time)
+        # print("Epoch time: ", epoch_time[e])
 
         model.eval()
         for sample in tqdm(devset):
@@ -199,11 +199,12 @@ if __name__ == '__main__':
         val_epoch_loss.append(val_loss/len(devset))
 
         # Metrics
-        with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
-            targets = json.load(file)
-        train_metrics = evaluate_predictions(targets, train_pred, args)
+        # with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
+        #     targets = json.load(file)
+        # train_metrics = evaluate_predictions(targets, train_pred, args)
         with open(os.path.join(root_dir, f'Data/dev.json'), 'r') as file:
             targets = json.load(file)
+        print(len(targets))
         val_metrics = evaluate_predictions(targets, val_pred, args)
 
         print(train_metrics)
