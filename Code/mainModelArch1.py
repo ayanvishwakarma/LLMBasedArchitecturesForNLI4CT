@@ -205,7 +205,8 @@ if __name__ == '__main__':
         with open(os.path.join(root_dir, f'Data/dev.json'), 'r') as file:
             targets = json.load(file)
         val_metrics = evaluate_predictions(targets, val_pred, args)
-        
+
+        print(train_metrics)
         train_task1_F1.append(train_metrics['Task1-Macro-F1'])
         train_task2_F1.append(train_metrics['Task2-F1'])
         train_faithfulness.append(train_metrics['Task1-Consistency'])
