@@ -131,7 +131,7 @@ class ModelArchitecture1(Module):
         
         head2_output, entailment_prob = self.head2(head2_input)
         
-        return entailment_prob, evidence_prob
+        return entailment_prob, evidence_prob, entailment_prob >= self.thresh_evidence, evidence_prob >= self.thresh_entailment
     
     def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits):
         sorted_inds = torch.argsort(entailment_logits)
