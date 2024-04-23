@@ -53,6 +53,6 @@ class TextEncoder(Module):
                                                            max_length=self.MAX_SEQ_LEN)
         tokenized_texts = {key: value.to(self.device_item.device) for key, value in tokenized_texts.items()}
         output = self.model(**tokenized_texts)
-        if type(output) == torch.Tensor:
+        if type(output) != torch.Tensor:
             output = output.last_hidden_state
         return self.linear(output[:, 0, :])
