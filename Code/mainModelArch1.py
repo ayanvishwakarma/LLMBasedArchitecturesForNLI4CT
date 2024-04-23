@@ -94,9 +94,9 @@ if __name__ == '__main__':
     epoch_time = []
 
     # ------------------------------Prepare DataLoaders------------------------------
-    seed_everything(seed)
+    seed_everything(args.seed)
     if args.cuda:
-        device = torch.device('cuda:' + str(gpu_no)) if torch.cuda.is_available() else torch.device('cpu')
+        device = torch.device('cuda:' + str(args.gpu_no)) if torch.cuda.is_available() else torch.device('cpu')
     else:
         device = torch.device('cpu')
     print("device: ", device)
