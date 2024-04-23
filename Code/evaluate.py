@@ -7,21 +7,25 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 
 def task1_metrics(targets, predictions, uuids, args):
     assert all([(uuid in targets and uuid in predictions) for uuid in uuids])
-    true = [targets[uuid]['Label'] == 'Entailment' for uuid in uuids]
-    pred = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
-    prob = [predictions[uuid]['EntailmentProbability'] for uuid in uuids]
+    true_entail = [targets[uuid]['Label'] == 'Entailment' for uuid in uuids]
+    pred_entail = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
+    prob_entail = [predictions[uuid]['EntailmentProbability'] for uuid in uuids]
+
+    true_contra = [targets[uuid]['Label'] == 'Contradiction' for uuid in uuids]
+    pred_contra = [predictions[uuid]['Prediction'] == 'Entailment' for uuid in uuids]
+    prob_contra = [1.0 - predictions[uuid]['EntailmentProbability'] for uuid in uuids]
 
     metrics_dict = {}
-    metrics_dict['Task1-Entailment-precision'] = precision_score(true, pred)
-    metrics_dict['Task1-Entailment-recall'] = recall_score(true, pred)
-    metrics_dict['Task1-Entailment-F1'] = f1_score(true, pred)
-    metrics_dict['Task1-Contradiction-precision'] = precision_score(1 - true, 1 - pred)
-    metrics_dict['Task1-Contradiction-recall'] = recall_score(1 - true, 1 - pred)
-    metrics_dict['Task1-Contradiction-F1'] = f1_score(1 - true, 1 - pred)
-    metrics_dict['Task1-Macro-F1'] = f1_score(true, pred, average='macro')
+    metrics_dict['Task1-Entailment-precision'] = precision_score(true_entail, pred_entail)
+    metrics_dict['Task1-Entailment-recall'] = recall_score(true_entail, pred_entail)
+    metrics_dict['Task1-Entailment-F1'] = f1_score(true_entail, pred_entail)
+    metrics_dict['Task1-Contradiction-precision'] = precision_score(true_contra, pred_contra)
+    metrics_dict['Task1-Contradiction-recall'] = recall_score(true_contra, pred_contra)
+    metrics_dict['Task1-Contradiction-F1'] = f1_score(true_contra, pred_contra)
+    metrics_dict['Task1-Macro-F1'] = f1_score(true_entail, pred_entail, average='macro')
 
     bce_score = BinaryCalibrationError(n_bins=args.n_bins, norm='l1')
-    metrics_dict['Task1-Calibration'] = float(bce_score(torch.tensor(prob), torch.tensor(true)).cpu().numpy()[0])
+    metrics_dict['Task1-Calibration'] = float(bce_score(torch.tensor(prob_entail), torch.tensor(true_entail)).cpu().numpy()[0])
     return metrics_dict
 
 def task2_metrics(targets, predictions, uuids, args):
