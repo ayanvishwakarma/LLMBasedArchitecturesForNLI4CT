@@ -8,7 +8,7 @@ import os
 from models import TextEncoder
 
 def head_factory(args, comp_name):
-    assert (self.comp_name in ['head1', 'head2'])
+    assert (comp_name in ['head1', 'head2'])
     model_name = args.head1 if comp_name == 'head1' else args.head2
     model_name = model_name.lower()
     if model_name == 'identity':
