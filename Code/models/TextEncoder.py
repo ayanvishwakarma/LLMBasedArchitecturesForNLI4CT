@@ -38,11 +38,6 @@ class TextEncoder(Module):
                 self.model.gradient_checkpointing_enable()
                 assert self.model.is_gradient_checkpointing
         
-        if args.multi_gpu:
-            device_ids = [int(x) for x in args.gpu_ids.split(',')]
-            self.model = nn.DataParallel(self.model)
-            print("asdf")
-        
     def forward(self, texts):
         tokenized_texts = self.tokenizer.batch_encode_plus(texts, 
                                                            padding='longest',
@@ -53,9 +48,7 @@ class TextEncoder(Module):
                                                            truncation=True,
                                                            max_length=self.MAX_SEQ_LEN)
         tokenized_texts = {key: value.to(self.device_item.device) for key, value in tokenized_texts.items()}
-        print(tokenized_texts)
         output = self.model(**tokenized_texts)
-        print(output)
         if type(output) != torch.Tensor:
             output = output.last_hidden_state
         return self.linear(output[:, 0, :])
