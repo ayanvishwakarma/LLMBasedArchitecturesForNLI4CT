@@ -188,14 +188,13 @@ if __name__ == '__main__':
         if accelerator.is_main_process:
             print("Epoch time: ", epoch_time[e])
 
-        # model.eval()
+        model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
-                with accelerator.autocast():
-                    entailment_prob, evidence_prob = model.forward(sample)
-                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                    loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
-                                                           evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                entailment_prob, evidence_prob = model.forward(sample)
+                entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
             if accelerator.is_main_process:
                 val_loss = val_loss + loss.item()
                 compute_and_save_predictions(val_pred, sample, 
