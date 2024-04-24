@@ -21,10 +21,11 @@ def get_loss_fn(args):
     if args.loss == 'ce':
         loss = nn.CrossEntropyLoss()
     def loss_fn(prob_task1, true_task1, prob_task2, true_task2):
-        prob_task1, true_task1 = prob_task1.view(1, 1), true_task1.view(-1)
+        prob_task1, true_task1 = prob_task1.view(-1, 1), true_task1.view(-1)
         prob_task2, true_task2 = prob_task2.view(-1, 1), true_task2.view(-1)
         prob_task1 = torch.cat([1 - prob_task1, prob_task1], dim=-1)
         prob_task2 = torch.cat([1 - prob_task2, prob_task2], dim=-1)
+        print(prob_task1, true_task1)
         return args.Lambda * loss(prob_task1, true_task1) + (1.0 - args.Lambda) * loss(prob_task2, true_task2)
         # elif args.loss == 'focal':
         #     pass
@@ -138,6 +139,8 @@ if __name__ == '__main__':
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
     loss_fn = get_loss_fn(args)
+    print([{"params": [p for n, p in model.named_parameters() if 'text_encoder' in n], "weight_decay_rate": 0.01},
+                             {"params": [p for n, p in model.named_parameters() if 'text_encoder' not in n]}])
     optimizer = optim.AdamW([{"params": [p for n, p in model.named_parameters() if 'text_encoder' in n], "weight_decay_rate": 0.01},
                              {"params": [p for n, p in model.named_parameters() if 'text_encoder' not in n]}], lr=args.lr)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=args.scheduler_factor,
