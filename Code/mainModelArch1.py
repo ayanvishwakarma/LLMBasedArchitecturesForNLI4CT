@@ -96,7 +96,6 @@ if __name__ == '__main__':
     parser.add_argument('--patience_es', default=5, type=int, help='Patience of early stopping. Default 5')
     parser.add_argument('--delta_es', default=0.0, type=float, help='Delta of early stopping. Default 0.0')
     parser.add_argument('--scheduler_factor', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
-    parser.add_argument('--mixed_precision', action='store_true', help='Use mixed-precision training. Default False')
     parser.add_argument('--monitor_value', default='Macro-F1', type=str, 
                         help='The value to montior during early-stopping and threshold update(task1). Default Macro-F1',
                         choices=['Macro-F1', 'F1-entail'])
@@ -156,7 +155,7 @@ if __name__ == '__main__':
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=args.scheduler_factor,
                                                      patience=1, threshold=0.0001, threshold_mode='rel',
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
-        
+    scaler = torch.cuda.amp.GradScaler()
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
@@ -175,15 +174,16 @@ if __name__ == '__main__':
         st_time = time.time()
         batch_processed = 0
         for sample in tqdm(trainset):
-            with accelerator.autocast():
+             with torch.autocast(device_type=device.type, dtype=torch.float16):
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
-                accelerator.backward(loss)
+                scaler.scale(loss).backward()
             batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
-                optimizer.step()
+                scaler.step(optimizer)
+                scaler.update()
                 model.zero_grad()
         end_time = time.time()
         epoch_time.append(end_time - st_time)
@@ -195,7 +195,7 @@ if __name__ == '__main__':
         stored_results = {}
         for sample in tqdm(trainset):
             with torch.no_grad():
-                with accelerator.autocast():
+                with torch.autocast(device_type=device.type, dtype=torch.float16):
                     entailment_prob, evidence_prob = model.forward(sample)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
-                with accelerator.autocast():
+                with torch.autocast(device_type=device.type, dtype=torch.float16):
                     entailment_prob, evidence_prob = model.forward(sample)
                     entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
@@ -321,10 +321,11 @@ if __name__ == '__main__':
             
         for sample in tqdm(devset):
             with torch.no_grad():
-                entailment_prob, evidence_prob = model.forward(sample)
-                entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]).to(device), 
-                                                        evidence_prob, torch.tensor(sample['label_task2'])).to(device))
+                with torch.autocast(device_type=device.type, dtype=torch.float16):
+                    entailment_prob, evidence_prob = model.forward(sample)
+                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                    loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]).to(device), 
+                                                            evidence_prob, torch.tensor(sample['label_task2'])).to(device))
             if split_name == 'test':
                 test_loss = test_loss + loss.item()
             compute_and_save_predictions(pred_dict, sample, 
