@@ -127,7 +127,8 @@ if __name__ == '__main__':
 
     # ------------------------------Initialize early stopping------------------------------
     early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
-                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'))
+                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'),
+                                   save_model=accelerator.is_main_process)
 
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
@@ -231,7 +232,7 @@ if __name__ == '__main__':
             print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
 
         # early stopping
-        early_stopping(val_metrics['Task1-Macro-F1'], model, save_model=accelerator.is_main_process)
+        early_stopping(val_metrics['Task1-Macro-F1'], model)
         if early_stopping.early_stop:
             print(f"Early Stopping after {e+1} epochs")
             break    
