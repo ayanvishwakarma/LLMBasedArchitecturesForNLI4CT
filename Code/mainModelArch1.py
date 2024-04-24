@@ -157,7 +157,6 @@ if __name__ == '__main__':
         batch_processed = 0
         for sample in tqdm(trainset):
             with torch.autocast(device_type=device.type, dtype=torch.float16):
-                print("here")
                 entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
