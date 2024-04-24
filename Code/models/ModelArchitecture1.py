@@ -123,8 +123,8 @@ class ModelArchitecture1(Module):
         
         cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
         if self.training:
-            entailment_labels = torch.tensor(data_dict['label_task2'])
-            evidence_inds = torch.where(entailment_labels)[0].to(device)
+            evidence_labels = torch.tensor(data_dict['label_task2'])
+            evidence_inds = torch.where(evidence_labels)[0].to(device)
         else:
             evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0].to(device)
         entail_head_input = cross_repr_output[torch.cat([torch.tensor([0]).to(device), evidence_inds], dim=-1)]
@@ -136,7 +136,8 @@ class ModelArchitecture1(Module):
     def get_predictions(self, entailment_prob, evidence_prob):
         return entailment_prob >= self.thresh_entailment, evidence_prob >= self.thresh_evidence
         
-    def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits, device):
+    def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits, device, task1_monitor='Macro-F1'):
+        # Adjust thresholds so maximize F1-score for task1 and task2.
         sorted_inds = torch.argsort(torch.tensor(entailment_logits).to(device))
         entailment_labels = torch.tensor(entailment_labels, dtype=torch.int32).to(device)[sorted_inds]
         entailment_logits = torch.tensor(entailment_logits, dtype=torch.float32).to(device)[sorted_inds]
@@ -156,7 +157,13 @@ class ModelArchitecture1(Module):
         F1_contradiction = 2 * precision_contradiction * recall_contradiction / (precision_contradiction + recall_contradiction + 1e-8)
         
         macro_F1 = (F1_entailment + F1_contradiction) / 2
-        self.register_buffer('thresh_entailment', thresholds[torch.argmax(macro_F1)])
+        if task1_monitor == 'Macro-F1':
+            index = torch.argmax(macro_F1)
+        elif task1_monitor == 'F1-entail:
+            index = torch.argmax(F1_entailment)
+        else:
+            raise Exception("task1 monitor quantity should be either Macro-F1 or F1-entail")
+        self.register_buffer('thresh_entailment', thresholds[index])
 
         print(macro_F1, thresholds)
         
