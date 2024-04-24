@@ -171,7 +171,7 @@ if __name__ == '__main__':
             if batch_processed == 0:
                 optimizer.step()
                 model.zero_grad()
-            if accelerator.is_main_process():
+            if accelerator.is_main_process:
                 train_loss = train_loss + loss.item()
                 compute_and_save_predictions(train_pred, sample, 
                                              entailment_pred.detach().cpu().numpy(), 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         end_time = time.time()
         epoch_time.append(end_time - st_time)
-        if accelerator.is_main_process():
+        if accelerator.is_main_process:
             model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
             print("Epoch time: ", epoch_time[e])
 
@@ -195,7 +195,7 @@ if __name__ == '__main__':
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
-            if accelerator.is_main_process():
+            if accelerator.is_main_process:
                 val_loss = val_loss + loss.item()
                 compute_and_save_predictions(val_pred, sample, 
                                              entailment_pred.detach().cpu().numpy(), 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
                                              evidence_pred.detach().cpu().numpy(),
                                              evidence_prob.detach().cpu().numpy())
 
-        if accelerator.is_main_process():
+        if accelerator.is_main_process:
             # Calculate mean loss of training data and validation data
             train_epoch_loss.append(train_loss * args.batch_size / len(trainset))
             val_epoch_loss.append(val_loss * args.batch_size / len(devset))
@@ -233,7 +233,7 @@ if __name__ == '__main__':
             print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
 
         # early stopping
-        early_stopping(val_metrics['Task1-Macro-F1'], model, save_model=accelerator.is_main_process())
+        early_stopping(val_metrics['Task1-Macro-F1'], model, save_model=accelerator.is_main_process)
         if early_stopping.early_stop:
             print(f"Early Stopping after {e+1} epochs")
             break    
@@ -284,7 +284,7 @@ if __name__ == '__main__':
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]), 
                                                         evidence_prob, torch.tensor(sample['label_task2'])))
-            if accelerator.is_main_process():
+            if accelerator.is_main_process:
                 if split_name == 'test':
                     test_loss = test_loss + loss.item()
                 compute_and_save_predictions(pred_dict, sample, 
@@ -292,7 +292,7 @@ if __name__ == '__main__':
                                              entailment_prob.detach().cpu().numpy(),
                                              evidence_pred.detach().cpu().numpy(),
                                              evidence_prob.detach().cpu().numpy())
-        if accelerator.is_main_process():
+        if accelerator.is_main_process:
             with open(os.path.join(root_dir, f'Data/{split_name}.json'), 'r') as file:
                 targets = json.load(file)
             metrics = evaluate_predictions(targets, pred_dict, args)
@@ -303,7 +303,7 @@ if __name__ == '__main__':
     result['test_loss'] = test_loss * args.batch_size / len(testset)   
 
     # ------------------------------Save results to a file------------------------------
-    if accelerator.is_main_process():
+    if accelerator.is_main_process:
         with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
                 pickle.dump(result, file)
     
