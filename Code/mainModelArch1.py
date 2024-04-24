@@ -65,15 +65,18 @@ if __name__ == '__main__':
     parser.add_argument('--grad_chkpnt', action='store_true', help='Use Gradient Checkpointing. Default False')
     
     # Model Architecture args
-    parser.add_argument('--head1', default='transformer', type=str, help='The head1 model to consider. Default transformer',
+    parser.add_argument('--cross_repr_module', default='transformer', type=str, help='The head1 model to consider. Default transformer',
                         choices=['identity', 'transformer', 'bilstm'])
-    parser.add_argument('--head2', default='identity', type=str, help='The head2 model to consider. Default identity',
+    parser.add_argument('--entail_head_module', default='identity', type=str, help='The head2 model to consider. Default identity',
                         choices=['identity', 'transformer', 'bilstm'])
+    parser.add_argument('--evidence_classify', default='post', type=str, 
+                        help='The evidence probability in cross_repr_module be calculated before or after the module',
+                        choices=['pre', 'post'])
     parser.add_argument('--hidden_size', default=128, type=int, help='The dimension of hidden layers of model. Default 128')
-    parser.add_argument('--num_layers_head1', default=4, type=int, help='The number of layers in head1. Default 4')
-    parser.add_argument('--num_layers_head2', default=4, type=int, help='The number of layers in head2. Default 4')
     parser.add_argument('--ff_dim', default=512, type=int, help='The feedforward hidden-layer dimension. Default 512')
-    parser.add_argument('--nhead', default=4, type=int, help='The number of heads in multi-head attention. Default 4')
+    parser.add_argument('--num_layers_cross_repr', default=4, type=int, help='The number of layers in head1. Default 4')
+    parser.add_argument('--num_layers_entail_head', default=4, type=int, help='The number of layers in head2. Default 4')
+    parser.add_argument('--n_heads', default=4, type=int, help='The number of heads in multi-head attention. Default 4')
     parser.add_argument('--dropout', default=0.2, type=float, help='The dropout rate in head1 and head2. Default 0.2')
     parser.add_argument('--pos_emb', default=None, type=str, help='The positional embedding to use in text-embedding output. Default None',
                         choices=[None, 'static', 'learnable'])
@@ -134,7 +137,6 @@ if __name__ == '__main__':
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=args.scheduler_factor,
                                                      patience=1, threshold=0.0001, threshold_mode='rel',
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
-    scaler = torch.cuda.amp.GradScaler()
 
     ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
     accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
@@ -169,20 +171,22 @@ if __name__ == '__main__':
             if batch_processed == 0:
                 optimizer.step()
                 model.zero_grad()
-            train_loss = train_loss + loss.item()
-            compute_and_save_predictions(train_pred, sample, 
-                                         entailment_pred.detach().cpu().numpy(), 
-                                         entailment_prob.detach().cpu().numpy(),
-                                         evidence_pred.detach().cpu().numpy(),
-                                         evidence_prob.detach().cpu().numpy())
-            train_task1_labels.append(sample['label_task1'])
-            train_task1_logits.append(float(entailment_prob))
-            train_task2_labels.extend(sample['label_task2'])
-            train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
-        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
+            if accelerator.is_main_process():
+                train_loss = train_loss + loss.item()
+                compute_and_save_predictions(train_pred, sample, 
+                                             entailment_pred.detach().cpu().numpy(), 
+                                             entailment_prob.detach().cpu().numpy(),
+                                             evidence_pred.detach().cpu().numpy(),
+                                             evidence_prob.detach().cpu().numpy())
+                train_task1_labels.append(sample['label_task1'])
+                train_task1_logits.append(float(entailment_prob))
+                train_task2_labels.extend(sample['label_task2'])
+                train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         end_time = time.time()
         epoch_time.append(end_time - st_time)
-        print("Epoch time: ", epoch_time[e])
+        if accelerator.is_main_process():
+            model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
+            print("Epoch time: ", epoch_time[e])
 
         model.eval()
         for sample in tqdm(devset):
@@ -191,40 +195,42 @@ if __name__ == '__main__':
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
-            val_loss = val_loss + loss.item()
-            compute_and_save_predictions(val_pred, sample, 
-                                         entailment_pred.detach().cpu().numpy(), 
-                                         entailment_prob.detach().cpu().numpy(),
-                                         evidence_pred.detach().cpu().numpy(),
-                                         evidence_prob.detach().cpu().numpy())
+            if accelerator.is_main_process():
+                val_loss = val_loss + loss.item()
+                compute_and_save_predictions(val_pred, sample, 
+                                             entailment_pred.detach().cpu().numpy(), 
+                                             entailment_prob.detach().cpu().numpy(),
+                                             evidence_pred.detach().cpu().numpy(),
+                                             evidence_prob.detach().cpu().numpy())
 
-        # Calculate mean loss of training data and validation data
-        train_epoch_loss.append(train_loss * args.batch_size / len(trainset))
-        val_epoch_loss.append(val_loss * args.batch_size / len(devset))
+        if accelerator.is_main_process():
+            # Calculate mean loss of training data and validation data
+            train_epoch_loss.append(train_loss * args.batch_size / len(trainset))
+            val_epoch_loss.append(val_loss * args.batch_size / len(devset))
 
-        # Metrics
-        with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
-            targets = json.load(file)
-        train_metrics = evaluate_predictions(targets, train_pred, args)
-        with open(os.path.join(root_dir, f'Data/dev.json'), 'r') as file:
-            targets = json.load(file)
-        val_metrics = evaluate_predictions(targets, val_pred, args)
+            # Metrics
+            with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
+                targets = json.load(file)
+            train_metrics = evaluate_predictions(targets, train_pred, args)
+            with open(os.path.join(root_dir, f'Data/dev.json'), 'r') as file:
+                targets = json.load(file)
+            val_metrics = evaluate_predictions(targets, val_pred, args)
+    
+            train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
+            train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
+            train_task1_F1.append(train_metrics['Task1-Macro-F1'])
+            train_task2_F1.append(train_metrics['Task2-F1'])
+            
+            val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
+            val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
+            val_task1_F1.append(val_metrics['Task1-Macro-F1'])
+            val_task2_F1.append(val_metrics['Task2-F1'])
 
-        train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
-        train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
-        train_task1_F1.append(train_metrics['Task1-Macro-F1'])
-        train_task2_F1.append(train_metrics['Task2-F1'])
-        
-        val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
-        val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
-        val_task1_F1.append(val_metrics['Task1-Macro-F1'])
-        val_task2_F1.append(val_metrics['Task2-F1'])
-        
-        print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
-        print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
-        print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
-        print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
-        print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
+            print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
+            print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
+            print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
+            print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
+            print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
 
         # early stopping
         early_stopping(val_metrics['Task1-Macro-F1'], model)
@@ -278,24 +284,27 @@ if __name__ == '__main__':
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]), 
                                                         evidence_prob, torch.tensor(sample['label_task2'])))
-            if split_name == 'test':
-                test_loss = test_loss + loss.item()
-            compute_and_save_predictions(pred_dict, sample, 
-                                         entailment_pred.detach().cpu().numpy(), 
-                                         entailment_prob.detach().cpu().numpy(),
-                                         evidence_pred.detach().cpu().numpy(),
-                                         evidence_prob.detach().cpu().numpy())
-        with open(os.path.join(root_dir, f'Data/{split_name}.json'), 'r') as file:
-            targets = json.load(file)
-        metrics = evaluate_predictions(targets, pred_dict, args)
-        result[f'best-model-{split_name}-metrics'] = metrics
-        with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
-            targets = json.dump(pred_dict, file)
+            if accelerator.is_main_process():
+                if split_name == 'test':
+                    test_loss = test_loss + loss.item()
+                compute_and_save_predictions(pred_dict, sample, 
+                                             entailment_pred.detach().cpu().numpy(), 
+                                             entailment_prob.detach().cpu().numpy(),
+                                             evidence_pred.detach().cpu().numpy(),
+                                             evidence_prob.detach().cpu().numpy())
+        if accelerator.is_main_process():
+            with open(os.path.join(root_dir, f'Data/{split_name}.json'), 'r') as file:
+                targets = json.load(file)
+            metrics = evaluate_predictions(targets, pred_dict, args)
+            result[f'best-model-{split_name}-metrics'] = metrics
+            with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
+                targets = json.dump(pred_dict, file)
 
     result['test_loss'] = test_loss * args.batch_size / len(testset)   
 
     # ------------------------------Save results to a file------------------------------
-    with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
-            pickle.dump(result, file)
-
-    print("Model succefully run and results and model are stored")
+    if accelerator.is_main_process():
+        with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
+                pickle.dump(result, file)
+    
+        print("Model succefully run and results and model are stored")
