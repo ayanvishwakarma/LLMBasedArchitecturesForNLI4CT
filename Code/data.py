@@ -63,5 +63,5 @@ class DatasetNLI4CT(Dataset):
                       'premises': texts,
                       'premise_ids': text_ids,
                       'label_task1': int(data_inst['Label'] == 'Entailment'),
-                      'label_task2': labels_task2} 
+                      'label_task2': [int(x) for x in labels_task2]} 
         return output_data
