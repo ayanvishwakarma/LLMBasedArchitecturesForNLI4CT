@@ -37,6 +37,7 @@ class TextEncoder(Module):
             else:
                 self.model.gradient_checkpointing_enable()
                 assert self.model.is_gradient_checkpointing
+            print("here")
         
         if args.multi_gpu:
             device_ids = [int(x) for x in args.gpu_ids.split(',')]
