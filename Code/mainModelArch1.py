@@ -143,8 +143,10 @@ if __name__ == '__main__':
                                                      patience=1, threshold=0.0001, threshold_mode='rel',
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
     scaler = torch.cuda.amp.GradScaler()
-    
-    accelerator = Accelerator()
+
+    from accelerate import DistributedDataParallelKwargs
+    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    accelerator = Accelerator(kwargs_handlers=[ddp_kwargs])
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
     print(model, dir(model))
