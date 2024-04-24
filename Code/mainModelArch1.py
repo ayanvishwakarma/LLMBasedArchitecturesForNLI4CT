@@ -188,7 +188,7 @@ if __name__ == '__main__':
             model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
             print("Epoch time: ", epoch_time[e])
 
-        model.eval()
+        # model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
                 with accelerator.autocast():
