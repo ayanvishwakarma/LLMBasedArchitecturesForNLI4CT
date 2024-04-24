@@ -117,11 +117,23 @@ if __name__ == '__main__':
     val_task2_F1 = []
     epoch_time = []
 
+    # ------------------------------Accelerator-------------------------------------
+    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
+                              kwargs_handlers=[ddp_kwargs])
+    if accelerator.is_main_process:
+        print(args)
+
     # ------------------------------Prepare DataLoaders------------------------------
     seed_everything(args.seed)
-    trainset = DatasetNLI4CT(root_dir=root_dir, split_name='train', args=args)
-    devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args)
-    testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args)
+    trainset = DatasetNLI4CT(root_dir=root_dir, split_name='train', args=args, verbose=accelerator.is_main_process)
+    devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args, verbose=accelerator.is_main_process)
+    testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args, verbose=accelerator.is_main_process)
+
+    # ------------------------------Initialize early stopping------------------------------
+    early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
+                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'),
+                                   save_model=accelerator.is_main_process)
 
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
@@ -132,19 +144,8 @@ if __name__ == '__main__':
                                                      patience=1, threshold=0.0001, threshold_mode='rel',
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
 
-    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-    accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
-                              kwargs_handlers=[ddp_kwargs])
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
-
-    if accelerator.is_main_process:
-        print(args)
-
-    # ------------------------------Initialize early stopping------------------------------
-    early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
-                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'),
-                                   save_model=accelerator.is_main_process)
         
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
