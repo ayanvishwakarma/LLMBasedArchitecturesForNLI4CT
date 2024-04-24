@@ -147,7 +147,7 @@ if __name__ == '__main__':
     accelerator = Accelerator()
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
-    print(model)
+    print(model, dir(model))
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
