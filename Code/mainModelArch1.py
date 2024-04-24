@@ -62,8 +62,6 @@ if __name__ == '__main__':
     parser.add_argument('--llm_finetune', action='store_true', help='Finetune llm. Default False')
     parser.add_argument('--use_lora', action='store_true', help='. Default False')
     parser.add_argument('--grad_chkpnt', action='store_true', help='Use Gradient Checkpointing. Default False')
-    parser.add_argument('--multi_gpu', action='store_true', help='Use multiple GPUs. Default False')
-    parser.add_argument('--gpu_ids', default='0,1', type=str, help='The gpu id\'s to use. Default 0,1')
     
     # Model Architecture args
     parser.add_argument('--head1', default='transformer', type=str, help='The head1 model to consider. Default transformer',
