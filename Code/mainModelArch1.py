@@ -185,7 +185,7 @@ if __name__ == '__main__':
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device)
-        print(model.module.thresh_entail, model.module.thresh_evidence)
+        print(model.module.thresh_entailment, model.module.thresh_evidence)
         end_time = time.time()
         epoch_time.append(end_time - st_time)
         if accelerator.is_main_process:
