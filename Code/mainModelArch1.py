@@ -182,24 +182,27 @@ if __name__ == '__main__':
 
         # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
         model.eval()
+        stored_results = {}
         for sample in tqdm(trainset):
             with torch.no_grad():
                 with accelerator.autocast():
                     entailment_prob, evidence_prob = model.forward(sample)
-                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
             train_loss = train_loss + loss.item()
-            compute_and_save_predictions(train_pred, sample, 
-                                         entailment_pred.detach().cpu().numpy(), 
-                                         entailment_prob.detach().cpu().numpy(),
-                                         evidence_pred.detach().cpu().numpy(),
-                                         evidence_prob.detach().cpu().numpy())
+            stored_results[sample['uuid']] = (sample, 
+                                              entailment_prob.detach().cpu().numpy(),
+                                              evidence_prob.detach().cpu().numpy())
             train_task1_labels.append(sample['label_task1'])
             train_task1_logits.append(float(entailment_prob))
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device)
+        for uuid, triplet in stored_results.items():
+            sample, entailment_prob, evidence_prob = triplet
+            entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+            compute_and_save_predictions(train_pred, sample, entailment_pred, entailment_prob, evidence_pred, evidence_prob)
+        del stored_results
         print(model.module.thresh_entailment, model.module.thresh_evidence)
 
         # Evaluate model on cross-validation(dev) set
