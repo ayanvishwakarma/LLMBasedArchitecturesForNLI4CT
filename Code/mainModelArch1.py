@@ -73,6 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', default=128, type=int, help='The dimension of hidden layers of model. Default 128')
     parser.add_argument('--num_layers_head1', default=4, type=int, help='The number of layers in head1. Default 4')
     parser.add_argument('--num_layers_head2', default=4, type=int, help='The number of layers in head2. Default 4')
+    parser.add_argument('--ff_dim', default=512, type=int, help='The feedforward hidden-layer dimension. Default 512')
     parser.add_argument('--nhead', default=4, type=int, help='The number of heads in multi-head attention. Default 4')
     parser.add_argument('--dropout', default=0.2, type=float, help='The dropout rate in head1 and head2. Default 0.2')
     parser.add_argument('--pos_emb', default=None, type=str, help='The positional embedding to use in text-embedding output. Default None',
@@ -144,12 +145,9 @@ if __name__ == '__main__':
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
     scaler = torch.cuda.amp.GradScaler()
 
-    from accelerate import DistributedDataParallelKwargs
-    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-    accelerator = Accelerator(kwargs_handlers=[ddp_kwargs])
+    accelerator = Accelerator(fp16=args.mixed_precision)
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
-    print(model, dir(model))
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
@@ -168,7 +166,7 @@ if __name__ == '__main__':
         batch_processed = 0
         for sample in tqdm(trainset):
             if args.mixed_precision:
-                with torch.autocast(device_type=device.type, dtype=torch.float16):
+                with accelerator.autocast():
                     entailment_prob, evidence_prob = model.forward(sample)
                     entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
@@ -199,7 +197,7 @@ if __name__ == '__main__':
             train_task1_logits.append(float(entailment_prob))
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
-        model.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
+        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
         end_time = time.time()
         epoch_time.append(end_time - st_time)
         print("Epoch time: ", epoch_time[e])
@@ -207,7 +205,8 @@ if __name__ == '__main__':
         model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
-                entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
+                entailment_prob, evidence_prob = model.forward(sample)
+                entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
             val_loss = val_loss + loss.item()
@@ -294,6 +293,7 @@ if __name__ == '__main__':
         for sample in tqdm(devset):
             with torch.no_grad():
                 entailment_prob, evidence_prob = model.forward(sample)
+                entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]), 
                                                         evidence_prob, torch.tensor(sample['label_task2'])))
             if split_name == 'test':
