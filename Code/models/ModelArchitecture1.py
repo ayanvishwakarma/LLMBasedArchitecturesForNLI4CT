@@ -121,7 +121,7 @@ class ModelArchitecture1(Module):
 
         if self.args.pos_emb is not None:
             pos_emb = self.positional_embedding(torch.arange(text_embed.shape[0], dtype=torch.float32))
-            text_embed += pos_emb
+            text_embed += pos_emb.to(device)
         
         cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
         if self.training:
