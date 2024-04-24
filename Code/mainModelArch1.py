@@ -169,7 +169,7 @@ if __name__ == '__main__':
         train_task2_logits = []
 
         # train model on trainset
-        model.eval() ###############################################################################################
+        model.train()
         st_time = time.time()
         batch_processed = 0
         for sample in tqdm(trainset):
@@ -189,7 +189,7 @@ if __name__ == '__main__':
         print("Epoch time: ", epoch_time[e])
 
         # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
-        model.eval() ############################################################################
+        model.train()
         stored_results = {}
         l = []
         for sample in tqdm(trainset):
@@ -219,7 +219,7 @@ if __name__ == '__main__':
         del stored_results
 
         # Evaluate model on cross-validation(dev) set
-        model.eval()  ######################################################################################
+        model.eval()
         l = []
         for sample in tqdm(devset):
             with torch.no_grad():
