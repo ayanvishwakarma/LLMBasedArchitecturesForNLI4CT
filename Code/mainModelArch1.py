@@ -151,7 +151,8 @@ if __name__ == '__main__':
         train_task1_logits = []
         train_task2_labels = []
         train_task2_logits = []
-        
+
+        print("here")
         model.train()
         st_time = time.time()
         batch_processed = 0
