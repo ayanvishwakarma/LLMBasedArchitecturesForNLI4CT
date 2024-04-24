@@ -98,6 +98,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     assert(0.0 <= args.Lambda <= 1.0)
     
+    print(args)
+    
     # ------------------------------Result Address------------------------------
     root_dir = '/'.join(__file__.split('/')[:-2])
     result_addr = f'{root_dir}/Results/{args.exp_name}-{str(args.seed)}'
