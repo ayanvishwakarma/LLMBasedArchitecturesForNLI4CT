@@ -158,14 +158,7 @@ if __name__ == '__main__':
         st_time = time.time()
         batch_processed = 0
         for sample in tqdm(trainset):
-            if args.mixed_precision:
-                with accelerator.autocast():
-                    entailment_prob, evidence_prob = model.forward(sample)
-                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                    loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
-                                                           evidence_prob, torch.tensor(sample['label_task2']).to(device))
-                scaler.scale(loss).backward()
-            else:
+            with accelerator.autocast():
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
@@ -174,11 +167,7 @@ if __name__ == '__main__':
             
             batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
-                if args.mixed_precision:
-                    scaler.step(optimizer)
-                    scaler.update()
-                else:
-                    optimizer.step()
+                optimizer.step()
                 model.zero_grad()
             train_loss = train_loss + loss.item()
             compute_and_save_predictions(train_pred, sample, 
