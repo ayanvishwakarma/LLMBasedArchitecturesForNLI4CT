@@ -185,7 +185,7 @@ if __name__ == '__main__':
         end_time = time.time()
         epoch_time.append(end_time - st_time)
         if accelerator.is_main_process:
-            model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
+            # model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits)
             print("Epoch time: ", epoch_time[e])
 
         # model.eval()
