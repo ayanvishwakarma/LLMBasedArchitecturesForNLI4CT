@@ -32,10 +32,9 @@ class Identity(Module):
     def forward(self, inputs):
         prob = self.classifier(inputs).squeeze(-1)
         if self.comp_name == 'head2':
-            prob = prob[0]
+            return prob[0]
         else:
-            prob = prob[1:]
-        return inputs, prob
+            return inputs, prob[1:]
         
 class BiLSTM(Module):
     def __init__(self, comp_name, args, **kwargs):
@@ -57,10 +56,9 @@ class BiLSTM(Module):
         encoded_inputs = self.encoder(inputs)
         prob = self.classifier(encoded_inputs).squeeze(-1)
         if self.comp_name == 'head2':
-            prob = prob[0]
+            return prob[0]
         else:
-            prob = prob[1:]
-        return encoded_inputs, prob
+            return encoded_inputs, prob[1:]
     
 class Transformer(Module):
     def __init__(self, comp_name, args, **kwargs):
@@ -83,10 +81,9 @@ class Transformer(Module):
         encoded_inputs = self.encoder(inputs)
         prob = self.classifier(encoded_inputs).squeeze(-1)
         if self.comp_name == 'head2':
-            prob = prob[0]
+            return prob[0]
         else:
-            prob = prob[1:]
-        return encoded_inputs, prob
+            return encoded_inputs, prob[1:]
 
 class ModelArchitecture1(Module):
     def __init__(self, args, **kwargs):
