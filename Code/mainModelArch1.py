@@ -100,8 +100,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     assert(0.0 <= args.Lambda <= 1.0)
     
-    print(args)
-    
     # ------------------------------Result Address------------------------------
     root_dir = '/'.join(__file__.split('/')[:-2])
     result_addr = f'{root_dir}/Results/{args.exp_name}-{str(args.seed)}'
@@ -144,6 +142,10 @@ if __name__ == '__main__':
                               kwargs_handlers=[ddp_kwargs])
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
+
+    if accelerator.is_main_process:
+        print(args)
+        
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
