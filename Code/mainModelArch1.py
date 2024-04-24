@@ -233,7 +233,7 @@ if __name__ == '__main__':
             print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
 
         # early stopping
-        early_stopping(val_metrics['Task1-Macro-F1'], model)
+        early_stopping(val_metrics['Task1-Macro-F1'], model, save_model=accelerator.is_main_process())
         if early_stopping.early_stop:
             print(f"Early Stopping after {e+1} epochs")
             break    
