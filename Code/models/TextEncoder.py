@@ -40,7 +40,7 @@ class TextEncoder(Module):
         
         if args.multi_gpu:
             device_ids = [int(x) for x in args.gpu_ids.split(',')]
-            self.model = nn.DataParallel(self.model, device_ids=device_ids)
+            self.model = nn.DataParallel(self.model)
             print("asdf")
         
     def forward(self, texts):
