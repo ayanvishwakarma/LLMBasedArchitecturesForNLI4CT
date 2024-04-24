@@ -37,6 +37,9 @@ class TextEncoder(Module):
             else:
                 self.model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant":False})
                 assert self.model.is_gradient_checkpointing
+
+        if args.multi_gpu:
+            self.model = nn.DataParallel(self.model, device_ids=[int(x) for x in args.gpu_ids.split(',')])
         
     def forward(self, texts):
         tokenized_texts = self.tokenizer.batch_encode_plus(texts, 
