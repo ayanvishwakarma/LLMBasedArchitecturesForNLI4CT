@@ -163,6 +163,7 @@ if __name__ == '__main__':
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
             print("qewpouipuerwuiopweropuiweqriopwerpoiurwe")
             scaler.scale(loss).backward()
+            print("apsodijfopiajweopiop8wrahrgophawoprgopihaweopigvoiawjgoijaweogf")
             batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
                 scaler.step(optimizer)
