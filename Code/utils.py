@@ -6,7 +6,7 @@ import random
 
 class EarlyStopping:
     """Early stops the training if metric doesn't improve after a given patience."""
-    def __init__(self, patience, verbose=False, delta=0, save_path='checkpoint.pt'):
+    def __init__(self, patience, verbose=False, delta=0, save_path='checkpoint.pt', save_model=True):
         """
         Args:
             patience (int): How long to wait after last time score improved.
@@ -24,6 +24,7 @@ class EarlyStopping:
         self.score_max = 0
         self.delta = delta
         self.save_path = save_path
+        self.save_model = save_model
         os.makedirs(pathlib.Path(self.save_path).parent, exist_ok=True)
 
     def __call__(self, score, model):
@@ -42,10 +43,11 @@ class EarlyStopping:
 
     def save_checkpoint(self, score, model):
         """Saves model when metric value increases."""
-        if self.verbose:
-            print(f'Metric-score increased ({self.score_max:.6f} --> {score:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), self.save_path)
-        self.score_max = score
+        if self.save_model:
+            if self.verbose:
+                print(f'Metric-score increased ({self.score_max:.6f} --> {score:.6f}).  Saving model ...')
+            torch.save(model.state_dict(), self.save_path)
+            self.score_max = score
 
 # ------------------------------Seeding------------------------------
 # Seeding for reproducibility
