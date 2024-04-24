@@ -159,6 +159,7 @@ if __name__ == '__main__':
         train_task2_labels = []
         train_task2_logits = []
 
+        # train model on trainset
         model.train()
         st_time = time.time()
         batch_processed = 0
@@ -169,11 +170,24 @@ if __name__ == '__main__':
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
                 accelerator.backward(loss)
-            
             batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
                 optimizer.step()
                 model.zero_grad()
+        end_time = time.time()
+        epoch_time.append(end_time - st_time)
+        if accelerator.is_main_process:
+            print("Epoch time: ", epoch_time[e])
+
+        # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
+        model.eval()
+        for sample in tqdm(trainset):
+            with torch.no_grad():
+                with accelerator.autocast():
+                    entailment_prob, evidence_prob = model.forward(sample)
+                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                    loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                           evidence_prob, torch.tensor(sample['label_task2']).to(device))
             train_loss = train_loss + loss.item()
             compute_and_save_predictions(train_pred, sample, 
                                          entailment_pred.detach().cpu().numpy(), 
@@ -186,11 +200,8 @@ if __name__ == '__main__':
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device)
         print(model.module.thresh_entailment, model.module.thresh_evidence)
-        end_time = time.time()
-        epoch_time.append(end_time - st_time)
-        if accelerator.is_main_process:
-            print("Epoch time: ", epoch_time[e])
 
+        # Evaluate model on cross-validation(dev) set
         model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
