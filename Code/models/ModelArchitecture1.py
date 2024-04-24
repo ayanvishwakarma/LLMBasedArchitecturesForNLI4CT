@@ -115,6 +115,7 @@ class ModelArchitecture1(Module):
         device = self.device_item.device
         text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] \
                      + data_dict['premises']
+        print(text_input)
         text_embed = self.text_encoder(text_input)
 
         if self.args.pos_emb is not None:
