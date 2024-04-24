@@ -16,18 +16,19 @@ from data import DatasetNLI4CT
 from evaluate import evaluate_predictions
 from utils import *
 from models import ModelArchitecture1
+from focal_loss.focal_loss import FocalLoss
 
 def get_loss_fn(args):
     if args.loss == 'ce':
         loss = nn.CrossEntropyLoss()
+    else args.loss == 'focal':
+        loss = FocalLoss(gamma=2.0)
     def loss_fn(prob_task1, true_task1, prob_task2, true_task2):
         prob_task1, true_task1 = prob_task1.view(-1, 1), true_task1.view(-1)
         prob_task2, true_task2 = prob_task2.view(-1, 1), true_task2.view(-1)
         prob_task1 = torch.cat([1 - prob_task1, prob_task1], dim=-1)
         prob_task2 = torch.cat([1 - prob_task2, prob_task2], dim=-1)
         return args.Lambda * loss(prob_task1, true_task1) + (1.0 - args.Lambda) * loss(prob_task2, true_task2)
-        # elif args.loss == 'focal':
-        #     pass
     return loss_fn
 
 def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_prob, evidence_pred, evidence_prob):
