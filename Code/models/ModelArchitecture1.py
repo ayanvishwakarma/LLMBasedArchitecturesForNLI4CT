@@ -94,6 +94,7 @@ class ModelArchitecture1(Module):
         self.args = args
         self.device_item = nn.Parameter(torch.tensor([0.0]), requires_grad=False)
         self.text_encoder = TextEncoder(args, args.hidden_size)
+        self.CLS_EMBD = nn.Parameter(torch.zeros(args.hidden_size, dtype=torch.float32))
         self.cross_repr_module = module_factory(args, 'cross_repr_module')
         self.register_buffer('thresh_evidence', torch.tensor(0.0, dtype=torch.float32))
         self.entail_head_module = module_factory(args, 'entail_head_module')
@@ -116,6 +117,7 @@ class ModelArchitecture1(Module):
         text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] \
                      + data_dict['premises']
         text_embed = self.text_encoder(text_input)
+        text_embed[0] += self.CLS_EMBD
 
         if self.args.pos_emb is not None:
             pos_emb = self.positional_embedding(torch.arange(text_embed.shape[0], dtype=torch.float32))
