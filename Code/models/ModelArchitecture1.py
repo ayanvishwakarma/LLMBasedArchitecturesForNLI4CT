@@ -7,9 +7,9 @@ import os
 
 from models import TextEncoder
 
-def head_factory(args, comp_name):
-    assert (comp_name in ['head1', 'head2'])
-    model_name = args.head1 if comp_name == 'head1' else args.head2
+def module_factory(args, comp_name):
+    assert (comp_name in ['cross_repr_module', 'entail_head_module'])
+    model_name = args.cross_repr_module if comp_name == 'cross_repr_module' else args.entail_head_module
     model_name = model_name.lower()
     if model_name == 'identity':
         return Identity(comp_name, args)
@@ -24,14 +24,15 @@ class Identity(Module):
     def __init__(self, comp_name, args, **kwargs):
         super().__init__(**kwargs)
         self.comp_name = comp_name
-        assert (self.comp_name in ['head1', 'head2'])
+        assert (self.comp_name in ['cross_repr_module', 'entail_head_module'])
+        self.evidence_classify = args.evidence_classify
         self.classifier = nn.Sequential(nn.Linear(args.hidden_size, 1, 
                                         bias=True, dtype=torch.float32),
                                         nn.Sigmoid())
         
     def forward(self, inputs):
         prob = self.classifier(inputs).squeeze(-1)
-        if self.comp_name == 'head2':
+        if self.comp_name == 'entail_head_module':
             return prob[0]
         else:
             return inputs, prob[1:]
@@ -40,11 +41,12 @@ class BiLSTM(Module):
     def __init__(self, comp_name, args, **kwargs):
         super().__init__(**kwargs)
         self.comp_name = comp_name
-        assert (self.comp_name in ['head1', 'head2'])
-        if self.comp_name == 'head1':
-            num_layers = args.num_layers_head1
+        assert (self.comp_name in ['cross_repr_module', 'entail_head_module'])
+        self.evidence_classify = args.evidence_classify
+        if self.comp_name == 'cross_repr_module':
+            num_layers = args.num_layers_cross_repr
         else:
-            num_layers = args.num_layers_head2
+            num_layers = args.num_layers_entail_head
         self.encoder = nn.LSTM(input_size=args.hidden_size, hidden_size=args.hidden_size,
                                num_layers=num_layers, bias=True, dropout=args.dropout,
                                bidirectional=True, dtype=torch.float32)
@@ -54,8 +56,8 @@ class BiLSTM(Module):
         
     def forward(self, inputs):
         encoded_inputs = self.encoder(inputs)
-        prob = self.classifier(encoded_inputs).squeeze(-1)
-        if self.comp_name == 'head2':
+        prob = self.classifier(encoded_inputs if self.evidence_classify == 'post' else inputs).squeeze(-1)
+        if self.comp_name == 'entail_head_module':
             return prob[0]
         else:
             return encoded_inputs, prob[1:]
@@ -64,11 +66,12 @@ class Transformer(Module):
     def __init__(self, comp_name, args, **kwargs):
         super().__init__(**kwargs)
         self.comp_name = comp_name
-        assert (self.comp_name in ['head1', 'head2'])
-        if self.comp_name == 'head1':
-            num_layers = args.num_layers_head1
+        assert (self.comp_name in ['cross_repr_module', 'entail_head_module'])
+        self.evidence_classify = args.evidence_classify
+        if self.comp_name == 'cross_repr_module':
+            num_layers = args.num_layers_cross_repr
         else:
-            num_layers = args.num_layers_head2
+            num_layers = args.num_layers_entail_head
         self.encoder = nn.TransformerEncoder(nn.TransformerEncoderLayer(d_model=args.hidden_size, 
                                              nhead=args.nhead, dim_feedforward=args.ff_dim,
                                              dropout=args.dropout, dtype=torch.float32), 
@@ -79,8 +82,8 @@ class Transformer(Module):
         
     def forward(self, inputs):
         encoded_inputs = self.encoder(inputs)
-        prob = self.classifier(encoded_inputs).squeeze(-1)
-        if self.comp_name == 'head2':
+        prob = self.classifier(encoded_inputs if self.evidence_classify == 'post' else inputs).squeeze(-1)
+        if self.comp_name == 'entail_head_module':
             return prob[0]
         else:
             return encoded_inputs, prob[1:]
@@ -91,9 +94,9 @@ class ModelArchitecture1(Module):
         self.args = args
         self.device_item = nn.Parameter(torch.tensor([0.0]), requires_grad=False)
         self.text_encoder = TextEncoder(args, args.hidden_size)
-        self.head1 = head_factory(args, 'head1')
+        self.cross_repr_module = module_factory(args, 'cross_repr_module')
         self.register_buffer('thresh_evidence', torch.tensor(0.0, dtype=torch.float32))
-        self.head2 = head_factory(args, 'head2')
+        self.entail_head_module = module_factory(args, 'entail_head_module')
         self.register_buffer('thresh_entailment', torch.tensor(0.0, dtype=torch.float32))
 
         if self.args.pos_emb == 'learnable':
@@ -117,15 +120,15 @@ class ModelArchitecture1(Module):
             pos_emb = self.positional_embedding(torch.arange(text_embed.shape[0], dtype=torch.float32))
             text_embed += pos_embed
         
-        head1_output, evidence_prob = self.head1(text_embed)
+        cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
         if self.training:
             entailment_labels = torch.tensor(data_dict['label_task2'])
             evidence_inds = torch.where(entailment_labels)[0]
         else:
             evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0]
-        head2_input = head1_output[torch.cat([torch.tensor([0]), evidence_inds], dim=-1)]
+        entail_head_input = cross_repr_output[torch.cat([torch.tensor([0]), evidence_inds], dim=-1)]
         
-        entailment_prob = self.head2(head2_input)
+        entailment_prob = self.head2(entail_head_input)
         
         return entailment_prob, evidence_prob
 
