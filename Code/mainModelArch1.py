@@ -9,8 +9,6 @@ import collections
 import time
 import json
 import argparse
-from accelerate import Accelerator
-from accelerate import DistributedDataParallelKwargs
 
 from data import DatasetNLI4CT
 from evaluate import evaluate_predictions
@@ -102,9 +100,17 @@ if __name__ == '__main__':
     parser.add_argument('--monitor_value', default='Macro-F1', type=str, 
                         help='The value to montior during early-stopping and threshold update(task1). Default Macro-F1',
                         choices=['Macro-F1', 'F1-entail'])
-  
+
+    # GPU args
+    parser.add_argument('--cuda', default=False, action='store_true', help='True if using gpu. Default False')
+    parser.add_argument('--gpu_no', default=0, type=int, help='The number of gpu to use. Default 0')
+    parser.add_argument('--multi_gpu', default=False, action='store_true', help='True if multi-gpu training is to be used. Default False')
+    parser.add_argument('--gpu_ids', default='0,1', type=str, help='The gpu ids to use for multi-gpu training. Default "0,1"')
+    
     args = parser.parse_args()
     assert(0.0 <= args.Lambda <= 1.0)
+    
+    print(args)
     
     # ------------------------------Result Address------------------------------
     root_dir = '/'.join(__file__.split('/')[:-2])
@@ -125,18 +131,16 @@ if __name__ == '__main__':
     val_task2_F1 = []
     epoch_time = []
 
-    # ------------------------------Accelerator-------------------------------------
-    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-    accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
-                              kwargs_handlers=[ddp_kwargs])
-    if accelerator.is_main_process:
-        print(args)
-
     # ------------------------------Prepare DataLoaders------------------------------
     seed_everything(args.seed)
-    trainset = DatasetNLI4CT(root_dir=root_dir, split_name='train', args=args, verbose=accelerator.is_main_process)
-    devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args, verbose=accelerator.is_main_process)
-    testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args, verbose=accelerator.is_main_process)
+    if args.cuda:
+        device = torch.device('cuda:' + str(args.gpu_no)) if torch.cuda.is_available() else torch.device('cpu')
+    else:
+        device = torch.device('cpu')
+    print("device: ", device)
+    trainset = DatasetNLI4CT(root_dir=root_dir, split_name='train', args=args)
+    devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args)
+    testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args)
 
     # ------------------------------Initialize early stopping------------------------------
     early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
@@ -145,15 +149,13 @@ if __name__ == '__main__':
 
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
+    model.to(device)
     loss_fn = get_loss_fn(args)
     optimizer = optim.AdamW([{"params": [p for n, p in model.named_parameters() if ('text_encoder' in n) and (p.requires_grad)], "weight_decay_rate": 0.01},
                              {"params": [p for n, p in model.named_parameters() if ('text_encoder' not in n) and (p.requires_grad)]}], lr=args.lr)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=args.scheduler_factor,
                                                      patience=1, threshold=0.0001, threshold_mode='rel',
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
-
-    model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
-    device = accelerator.device
         
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
@@ -203,7 +205,7 @@ if __name__ == '__main__':
             train_task1_logits.append(float(entailment_prob)) 
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
-        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device, 
+        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, 
                                         task1_monitor=args.monitor_value)
         for uuid, triplet in stored_results.items():
             sample, entailment_prob, evidence_prob = triplet
@@ -298,9 +300,8 @@ if __name__ == '__main__':
     # ------------------------------Load model for testing------------------------------
     best_model_auprc = ModelArchitecture1(args)
     best_model_auprc.load_state_dict(os.path.join(result_addr, 'model_state_dict.pt'))
+    best_model_auprc.to(device)
     print("Model based on AUPRC loaded for testing.")
-
-    best_model_auprc = accelerator.prepare(best_model_auprc)
     
     train_loss = 0
     train_pred = {}
