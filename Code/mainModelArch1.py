@@ -175,7 +175,7 @@ if __name__ == '__main__':
         for sample in tqdm(trainset):
             with torch.autocast(device_type=device.type, dtype=torch.float16):
                 entailment_prob, evidence_prob = model.forward(sample)
-                entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
                 scaler.scale(loss).backward()
@@ -203,11 +203,11 @@ if __name__ == '__main__':
             train_task1_logits.append(float(entailment_prob)) 
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
-        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, 
+        model.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, 
                                         task1_monitor=args.monitor_value)
         for uuid, triplet in stored_results.items():
             sample, entailment_prob, evidence_prob = triplet
-            entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+            entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
             compute_and_save_predictions(train_pred, sample, 
                                          entailment_pred.detach().cpu().numpy(), 
                                          entailment_prob.detach().cpu().numpy(),
@@ -221,7 +221,7 @@ if __name__ == '__main__':
             with torch.no_grad():
                 with torch.autocast(device_type=device.type, dtype=torch.float16):
                     entailment_prob, evidence_prob = model.forward(sample)
-                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                    entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
             val_loss = val_loss + loss.item()
@@ -320,7 +320,7 @@ if __name__ == '__main__':
             with torch.no_grad():
                 with torch.autocast(device_type=device.type, dtype=torch.float16):
                     entailment_prob, evidence_prob = model.forward(sample)
-                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                    entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]).to(device), 
                                                             evidence_prob, torch.tensor(sample['label_task2'])).to(device))
             if split_name == 'test':
