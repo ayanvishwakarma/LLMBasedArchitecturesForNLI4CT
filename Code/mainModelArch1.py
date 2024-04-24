@@ -219,7 +219,7 @@ if __name__ == '__main__':
         del stored_results
 
         # Evaluate model on cross-validation(dev) set
-        model.eval()
+        model.train()  ######################################################################################
         l = []
         for sample in tqdm(devset):
             with torch.no_grad():
