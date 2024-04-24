@@ -3,3 +3,4 @@ numpy
 transformers
 peft
 accelerate
+focal-loss-torch
