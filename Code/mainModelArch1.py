@@ -171,17 +171,16 @@ if __name__ == '__main__':
             if batch_processed == 0:
                 optimizer.step()
                 model.zero_grad()
-            if accelerator.is_main_process:
-                train_loss = train_loss + loss.item()
-                compute_and_save_predictions(train_pred, sample, 
-                                             entailment_pred.detach().cpu().numpy(), 
-                                             entailment_prob.detach().cpu().numpy(),
-                                             evidence_pred.detach().cpu().numpy(),
-                                             evidence_prob.detach().cpu().numpy())
-                train_task1_labels.append(sample['label_task1'])
-                train_task1_logits.append(float(entailment_prob))
-                train_task2_labels.extend(sample['label_task2'])
-                train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
+            train_loss = train_loss + loss.item()
+            compute_and_save_predictions(train_pred, sample, 
+                                         entailment_pred.detach().cpu().numpy(), 
+                                         entailment_prob.detach().cpu().numpy(),
+                                         evidence_pred.detach().cpu().numpy(),
+                                         evidence_prob.detach().cpu().numpy())
+            train_task1_labels.append(sample['label_task1'])
+            train_task1_logits.append(float(entailment_prob))
+            train_task2_labels.extend(sample['label_task2'])
+            train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
         model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device)
         end_time = time.time()
         epoch_time.append(end_time - st_time)
@@ -195,37 +194,36 @@ if __name__ == '__main__':
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
-            if accelerator.is_main_process:
-                val_loss = val_loss + loss.item()
-                compute_and_save_predictions(val_pred, sample, 
-                                             entailment_pred.detach().cpu().numpy(), 
-                                             entailment_prob.detach().cpu().numpy(),
-                                             evidence_pred.detach().cpu().numpy(),
-                                             evidence_prob.detach().cpu().numpy())
+            val_loss = val_loss + loss.item()
+            compute_and_save_predictions(val_pred, sample, 
+                                         entailment_pred.detach().cpu().numpy(), 
+                                         entailment_prob.detach().cpu().numpy(),
+                                         evidence_pred.detach().cpu().numpy(),
+                                         evidence_prob.detach().cpu().numpy())
 
+        # Calculate mean loss of training data and validation data
+        train_epoch_loss.append(train_loss * args.batch_size / len(trainset))
+        val_epoch_loss.append(val_loss * args.batch_size / len(devset))
+
+        # Metrics
+        with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
+            targets = json.load(file)
+        train_metrics = evaluate_predictions(targets, train_pred, args)
+        with open(os.path.join(root_dir, f'Data/dev.json'), 'r') as file:
+            targets = json.load(file)
+        val_metrics = evaluate_predictions(targets, val_pred, args)
+
+        train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
+        train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
+        train_task1_F1.append(train_metrics['Task1-Macro-F1'])
+        train_task2_F1.append(train_metrics['Task2-F1'])
+        
+        val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
+        val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
+        val_task1_F1.append(val_metrics['Task1-Macro-F1'])
+        val_task2_F1.append(val_metrics['Task2-F1'])
+        
         if accelerator.is_main_process:
-            # Calculate mean loss of training data and validation data
-            train_epoch_loss.append(train_loss * args.batch_size / len(trainset))
-            val_epoch_loss.append(val_loss * args.batch_size / len(devset))
-
-            # Metrics
-            with open(os.path.join(root_dir, f'Data/train.json'), 'r') as file:
-                targets = json.load(file)
-            train_metrics = evaluate_predictions(targets, train_pred, args)
-            with open(os.path.join(root_dir, f'Data/dev.json'), 'r') as file:
-                targets = json.load(file)
-            val_metrics = evaluate_predictions(targets, val_pred, args)
-    
-            train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
-            train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
-            train_task1_F1.append(train_metrics['Task1-Macro-F1'])
-            train_task2_F1.append(train_metrics['Task2-F1'])
-            
-            val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
-            val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
-            val_task1_F1.append(val_metrics['Task1-Macro-F1'])
-            val_task2_F1.append(val_metrics['Task2-F1'])
-
             print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
             print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
             print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
@@ -283,21 +281,20 @@ if __name__ == '__main__':
             with torch.no_grad():
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]), 
-                                                        evidence_prob, torch.tensor(sample['label_task2'])))
-            if accelerator.is_main_process:
-                if split_name == 'test':
-                    test_loss = test_loss + loss.item()
-                compute_and_save_predictions(pred_dict, sample, 
-                                             entailment_pred.detach().cpu().numpy(), 
-                                             entailment_prob.detach().cpu().numpy(),
-                                             evidence_pred.detach().cpu().numpy(),
-                                             evidence_prob.detach().cpu().numpy())
+                loss = (1 / args.batch_size) * loss_fn((entailment_prob, torch.tensor([sample['label_task1']]).to(device), 
+                                                        evidence_prob, torch.tensor(sample['label_task2'])).to(device))
+            if split_name == 'test':
+                test_loss = test_loss + loss.item()
+            compute_and_save_predictions(pred_dict, sample, 
+                                         entailment_pred.detach().cpu().numpy(), 
+                                         entailment_prob.detach().cpu().numpy(),
+                                         evidence_pred.detach().cpu().numpy(),
+                                         evidence_prob.detach().cpu().numpy())
+        with open(os.path.join(root_dir, f'Data/{split_name}.json'), 'r') as file:
+            targets = json.load(file)
+        metrics = evaluate_predictions(targets, pred_dict, args)
+        result[f'best-model-{split_name}-metrics'] = metrics
         if accelerator.is_main_process:
-            with open(os.path.join(root_dir, f'Data/{split_name}.json'), 'r') as file:
-                targets = json.load(file)
-            metrics = evaluate_predictions(targets, pred_dict, args)
-            result[f'best-model-{split_name}-metrics'] = metrics
             with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
                 targets = json.dump(pred_dict, file)
 
