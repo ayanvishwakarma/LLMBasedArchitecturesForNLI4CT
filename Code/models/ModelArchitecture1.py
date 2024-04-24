@@ -70,7 +70,7 @@ class Transformer(Module):
         else:
             num_layers = args.num_layers_head2
         self.encoder = nn.TransformerEncoder(nn.TransformerEncoderLayer(d_model=args.hidden_size, 
-                                             nhead=args.nhead, dim_feedforward=args.hidden_size,
+                                             nhead=args.nhead, dim_feedforward=args.ff_dim,
                                              dropout=args.dropout, dtype=torch.float32), 
                                              num_layers=num_layers)
         self.classifier = nn.Sequential(nn.Linear(args.hidden_size, 1, 
