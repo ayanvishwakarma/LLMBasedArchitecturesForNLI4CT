@@ -112,6 +112,7 @@ class ModelArchitecture1(Module):
             return w
         
     def forward(self, data_dict):
+        device = self.device_item.device
         text_input = [f"The Hypothesis to be evaluated for 'Entailment | Contradiction' is '{data_dict['hypothesis']}'"] \
                      + data_dict['premises']
         text_embed = self.text_encoder(text_input)
@@ -123,10 +124,10 @@ class ModelArchitecture1(Module):
         cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
         if self.training:
             entailment_labels = torch.tensor(data_dict['label_task2'])
-            evidence_inds = torch.where(entailment_labels)[0]
+            evidence_inds = torch.where(entailment_labels)[0].to(device)
         else:
-            evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0]
-        entail_head_input = cross_repr_output[torch.cat([torch.tensor([0]), evidence_inds], dim=-1)]
+            evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0].to(device)
+        entail_head_input = cross_repr_output[torch.cat([torch.tensor([0]).to(device), evidence_inds], dim=-1)]
         
         entailment_prob = self.entail_head_module(entail_head_input)
         
