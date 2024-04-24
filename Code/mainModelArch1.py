@@ -123,11 +123,6 @@ if __name__ == '__main__':
     devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args)
     testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args)
 
-    # ------------------------------Initialize early stopping------------------------------
-    early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
-                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'),
-                                   save_model=accelerator.is_main_process)
-
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
     loss_fn = get_loss_fn(args)
@@ -145,6 +140,11 @@ if __name__ == '__main__':
 
     if accelerator.is_main_process:
         print(args)
+
+    # ------------------------------Initialize early stopping------------------------------
+    early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
+                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'),
+                                   save_model=accelerator.is_main_process)
         
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
