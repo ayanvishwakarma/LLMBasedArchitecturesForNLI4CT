@@ -128,7 +128,6 @@ if __name__ == '__main__':
 
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
-    model.to(device)
     loss_fn = get_loss_fn(args)
     optimizer = optim.AdamW([{"params": [p for n, p in model.named_parameters() if 'text_encoder' in n], "weight_decay_rate": 0.01},
                              {"params": [p for n, p in model.named_parameters() if 'text_encoder' not in n]}], lr=args.lr)
