@@ -55,6 +55,7 @@ class TextEncoder(Module):
         tokenized_texts = {key: value.to(self.device_item.device) for key, value in tokenized_texts.items()}
         print(tokenized_texts)
         output = self.model(**tokenized_texts)
+        print("abcdaweroijoawejfoipjewf")
         if type(output) != torch.Tensor:
             output = output.last_hidden_state
         return self.linear(output[:, 0, :])
