@@ -32,6 +32,7 @@ class TextEncoder(Module):
                                    adapter_name='default')
         
         if args.grad_chkpnt:
+            print("abcd")
             if not self.model.supports_gradient_checkpointing:
                 print(f"'{self.llm_path}' does not support gradient checkpointing")
             else:
