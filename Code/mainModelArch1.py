@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
     # Seed
-    parser.add_argument('--exp-name', default='exp-0', type=str, help='The name of experiment')
+    parser.add_argument('--exp_name', default='exp-0', type=str, help='The name of experiment')
     parser.add_argument('--seed', default=2024, type=int, help='The seed value for reproducibility. Default 2024')
 
     # Dataset args
