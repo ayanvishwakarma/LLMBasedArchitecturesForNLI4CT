@@ -9,6 +9,7 @@ import collections
 import time
 import json
 import argparse
+from accelerate import Accelerator
 
 from data import DatasetNLI4CT
 from evaluate import evaluate_predictions
@@ -142,6 +143,9 @@ if __name__ == '__main__':
                                                      patience=1, threshold=0.0001, threshold_mode='rel',
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
     scaler = torch.cuda.amp.GradScaler()
+    
+    accelerator = Accelerator()
+    model, optimizer, scheduler, trainset, valset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, valset, testset)
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
@@ -169,9 +173,7 @@ if __name__ == '__main__':
                 entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
-                print("abcd")
-                loss.backward()
-                print("efgh")
+                accelerator.backward(loss)
             
             batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
