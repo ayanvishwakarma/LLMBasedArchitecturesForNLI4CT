@@ -167,8 +167,6 @@ class ModelArchitecture1(Module):
         else:
             raise Exception("task1 monitor quantity should be either Macro-F1 or F1-entail")
         self.register_buffer('thresh_entailment', thresholds[index])
-
-        print(macro_F1, thresholds)
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits).to(device))
         evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32).to(device)[sorted_inds]
