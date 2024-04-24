@@ -145,7 +145,7 @@ if __name__ == '__main__':
     scaler = torch.cuda.amp.GradScaler()
     
     accelerator = Accelerator()
-    model, optimizer, scheduler, trainset, valset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, valset, testset)
+    model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
