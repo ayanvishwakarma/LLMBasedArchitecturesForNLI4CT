@@ -143,7 +143,7 @@ if __name__ == '__main__':
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
     scaler = torch.cuda.amp.GradScaler()
 
-    accelerator = Accelerator(fp16=args.mixed_precision)
+    accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None)
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
     # ------------------------------Model Training------------------------------
