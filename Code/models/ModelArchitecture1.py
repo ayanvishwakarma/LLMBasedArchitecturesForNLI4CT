@@ -135,10 +135,10 @@ class ModelArchitecture1(Module):
     def get_predictions(self, entailment_prob, evidence_prob):
         return entailment_prob >= self.thresh_entailment, evidence_prob >= self.thresh_evidence
         
-    def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits):
-        sorted_inds = torch.argsort(torch.tensor(entailment_logits))
-        entailment_labels = torch.tensor(entailment_labels, dtype=torch.int32)[sorted_inds]
-        entailment_logits = torch.tensor(entailment_logits, dtype=torch.float32)[sorted_inds]
+    def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits, device):
+        sorted_inds = torch.argsort(torch.tensor(entailment_logits).to(device))
+        entailment_labels = torch.tensor(entailment_labels, dtype=torch.int32).to(device)[sorted_inds]
+        entailment_logits = torch.tensor(entailment_logits, dtype=torch.float32).to(device)[sorted_inds]
         
         thresholds = (entailment_logits[:-1] + entailment_logits[1:]) / 2
         TP = torch.flip(torch.cumsum(torch.flip(entailment_labels, dims=(-1,))[:-1] == 1, dim=-1), dims=(-1,))
@@ -157,9 +157,9 @@ class ModelArchitecture1(Module):
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         self.register_buffer('thresh_entailment', thresholds[torch.argmax(macro_F1)])
         
-        sorted_inds = torch.argsort(torch.tensor(evidence_logits))
-        evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32)[sorted_inds]
-        evidence_logits = torch.tensor(evidence_logits, dtype=torch.float32)[sorted_inds]
+        sorted_inds = torch.argsort(torch.tensor(evidence_logits).to(device))
+        evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32).to(device)[sorted_inds]
+        evidence_logits = torch.tensor(evidence_logits, dtype=torch.float32).to(device)[sorted_inds]
         
         thresholds = (evidence_logits[:-1] + evidence_logits[1:]) / 2
         TP = torch.flip(torch.cumsum(torch.flip(evidence_logits, dims=(-1,))[:-1] == 1, dim=-1), dims=(-1,))
