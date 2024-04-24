@@ -125,7 +125,7 @@ class ModelArchitecture1(Module):
             evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0]
         head2_input = head1_output[torch.cat([torch.tensor([0]), evidence_inds], dim=-1)]
         
-        head2_output, entailment_prob = self.head2(head2_input)
+        entailment_prob = self.head2(head2_input)
         
         return entailment_prob, evidence_prob
 
