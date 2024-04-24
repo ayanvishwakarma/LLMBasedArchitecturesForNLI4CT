@@ -105,7 +105,7 @@ class ModelArchitecture1(Module):
         
     def positional_embedding(self, pos_ids):
         if self.args.pos_emb == 'static':
-            w = pos_ids.unsqueeze(-1) / (10000 ** torch.linspace(0, 1, args.hidden_size//2))
+            w = pos_ids.unsqueeze(-1) / (10000 ** torch.linspace(0, 1, self.args.hidden_size//2))
             return torch.cat([torch.sin(w), torch.cos(w)], dim=-1)
         elif self.args.pos_emb == 'learnable':
             w = self.pos_weights(pos_ids.unsqueeze(-1))
