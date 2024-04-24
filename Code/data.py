@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 class DatasetNLI4CT(Dataset):
-    def __init__(self, root_dir, split_name, args, **kwargs):
+    def __init__(self, root_dir, split_name, args, verbose=True, **kwargs):
         super().__init__(**kwargs)
         self.data_ablation = args.data_ablation
         self.root_dir = __file__ if root_dir is None else root_dir
@@ -12,7 +12,8 @@ class DatasetNLI4CT(Dataset):
         with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
         self.uuids = list(self.data.keys())
-        print(f'Number of instances in {split_name}: {len(self.uuids)}')
+        if verbose:
+            print(f'Number of instances in {split_name}: {len(self.uuids)}')
     
     def __len__(self):
         return len(self.uuids)
