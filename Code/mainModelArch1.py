@@ -142,6 +142,7 @@ if __name__ == '__main__':
     accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
                               kwargs_handlers=[ddp_kwargs])
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
+    device = accelerator.device
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
@@ -162,8 +163,8 @@ if __name__ == '__main__':
             with accelerator.autocast():
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']))
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
                 accelerator.backward(loss)
             
             batch_processed = (batch_processed + 1) % args.batch_size
@@ -192,8 +193,8 @@ if __name__ == '__main__':
             with torch.no_grad():
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']))
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
             if accelerator.is_main_process:
                 val_loss = val_loss + loss.item()
                 compute_and_save_predictions(val_pred, sample, 
