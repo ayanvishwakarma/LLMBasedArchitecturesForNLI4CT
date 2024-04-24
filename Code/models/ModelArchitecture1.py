@@ -138,8 +138,9 @@ class ModelArchitecture1(Module):
     def get_predictions(self, entailment_prob, evidence_prob):
         return entailment_prob >= self.thresh_entailment, evidence_prob >= self.thresh_evidence
         
-    def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits, device, task1_monitor='Macro-F1'):
+    def on_train_epoch_end(self, entailment_labels, entailment_logits, evidence_labels, evidence_logits, task1_monitor='Macro-F1'):
         # Adjust thresholds so maximize F1-score for task1 and task2.
+        device = self.device_item.device
         sorted_inds = torch.argsort(torch.tensor(entailment_logits).to(device))
         entailment_labels = torch.tensor(entailment_labels, dtype=torch.int32).to(device)[sorted_inds]
         entailment_logits = torch.tensor(entailment_logits, dtype=torch.float32).to(device)[sorted_inds]
