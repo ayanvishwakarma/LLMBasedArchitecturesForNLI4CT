@@ -143,8 +143,7 @@ if __name__ == '__main__':
 
     # ------------------------------Initialize early stopping------------------------------
     early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
-                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'),
-                                   save_model=accelerator.is_main_process)
+                                   save_path=os.path.join(result_addr, 'model_state_dict.pt'))
 
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
@@ -187,8 +186,7 @@ if __name__ == '__main__':
                 model.zero_grad()
         end_time = time.time()
         epoch_time.append(end_time - st_time)
-        if accelerator.is_main_process:
-            print("Epoch time: ", epoch_time[e])
+        print("Epoch time: ", epoch_time[e])
 
         # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
         model.train()
@@ -257,13 +255,12 @@ if __name__ == '__main__':
         val_calibration.append(val_metrics['Task1-Calibration'])
         val_task2_F1.append(val_metrics['Task2-F1'])
         
-        if accelerator.is_main_process:
-            print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
-            print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
-            print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
-            print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
-            print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
-            print("{:>50}".format(f"Train Calibration: {train_metrics['Task1-Calibration']:8.6f}"), "{:>50}".format(f"Val Calibration: {val_metrics['Task1-Calibration']:8.6f}"))
+        print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Calibration: {train_metrics['Task1-Calibration']:8.6f}"), "{:>50}".format(f"Val Calibration: {val_metrics['Task1-Calibration']:8.6f}"))
 
         # early stopping
         if args.monitor_value == 'Macro-F1':
@@ -337,15 +334,13 @@ if __name__ == '__main__':
             targets = json.load(file)
         metrics = evaluate_predictions(targets, pred_dict, args)
         result[f'best-model-{split_name}-metrics'] = metrics
-        if accelerator.is_main_process:
-            with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
-                targets = json.dump(pred_dict, file)
+        with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
+            targets = json.dump(pred_dict, file)
 
     result['test_loss'] = test_loss * args.batch_size / len(testset)   
 
     # ------------------------------Save results to a file------------------------------
-    if accelerator.is_main_process:
-        with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
-                pickle.dump(result, file)
-    
-        print("Model succefully run and results and model are stored")
+    with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
+            pickle.dump(result, file)
+
+    print("Model succefully run and results and model are stored")
