@@ -93,6 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('--patience_es', default=5, type=int, help='Patience of early stopping. Default 5')
     parser.add_argument('--delta_es', default=0.0, type=float, help='Delta of early stopping. Default 0.0')
     parser.add_argument('--scheduler_factor', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
+    parser.add_argument('--mixed_precision', action='store_true', help='Use mixed-precision training. Default False')
   
     args = parser.parse_args()
     assert(0.0 <= args.Lambda <= 1.0)
@@ -156,18 +157,25 @@ if __name__ == '__main__':
         st_time = time.time()
         batch_processed = 0
         for sample in tqdm(trainset):
-            with torch.autocast(device_type=device.type, dtype=torch.float16):
+            if args.mixed_precision:
+                with torch.autocast(device_type=device.type, dtype=torch.float16):
+                    entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
+                    loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                           evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                scaler.scale(loss).backward()
+            else:
                 entailment_prob, evidence_prob, entailment_pred, evidence_pred = model.forward(sample)
-                print("aowidfjoajwfoijaweogijpiojarwg")
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                        evidence_prob, torch.tensor(sample['label_task2']).to(device))
-            print("qewpouipuerwuiopweropuiweqriopwerpoiurwe")
-            scaler.scale(loss).backward()
-            print("apsodijfopiajweopiop8wrahrgophawoprgopihaweopigvoiawjgoijaweogf")
+                loss.backward()
+            
             batch_processed = (batch_processed + 1) % args.batch_size
             if batch_processed == 0:
-                scaler.step(optimizer)
-                scaler.update()
+                if args.mixed_precision:
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    optimizer.step()
                 model.zero_grad()
             train_loss = train_loss + loss.item()
             compute_and_save_predictions(train_pred, sample, 
