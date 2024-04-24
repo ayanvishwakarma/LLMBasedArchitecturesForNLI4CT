@@ -25,7 +25,6 @@ def get_loss_fn(args):
         prob_task2, true_task2 = prob_task2.view(-1, 1), true_task2.view(-1)
         prob_task1 = torch.cat([1 - prob_task1, prob_task1], dim=-1)
         prob_task2 = torch.cat([1 - prob_task2, prob_task2], dim=-1)
-        print(prob_task1, true_task1)
         return args.Lambda * loss(prob_task1, true_task1) + (1.0 - args.Lambda) * loss(prob_task2, true_task2)
         # elif args.loss == 'focal':
         #     pass
@@ -97,6 +96,9 @@ if __name__ == '__main__':
     parser.add_argument('--delta_es', default=0.0, type=float, help='Delta of early stopping. Default 0.0')
     parser.add_argument('--scheduler_factor', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
     parser.add_argument('--mixed_precision', action='store_true', help='Use mixed-precision training. Default False')
+    parser.add_argument('--monitor_value', default='Macro-F1', type=str, 
+                        help='The value to montior during early-stopping and threshold update(task1). Default Macro-F1',
+                        choices=['Macro-F1', 'F1-entail'])
   
     args = parser.parse_args()
     assert(0.0 <= args.Lambda <= 1.0)
@@ -110,11 +112,13 @@ if __name__ == '__main__':
     train_task1_F1_entail = []
     train_task1_F1_contra = []
     train_task1_F1 = []
+    train_calibration = []
     train_task2_F1 = []
     val_epoch_loss = []
     val_task1_F1_entail = []
     val_task1_F1_contra = []
     val_task1_F1 = []
+    val_calibration = []
     val_task2_F1 = []
     epoch_time = []
 
@@ -182,7 +186,7 @@ if __name__ == '__main__':
             print("Epoch time: ", epoch_time[e])
 
         # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
-        model.eval()
+        model.train()
         stored_results = {}
         for sample in tqdm(trainset):
             with torch.no_grad():
@@ -198,22 +202,23 @@ if __name__ == '__main__':
             train_task1_logits.append(float(entailment_prob))
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
-        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device)
+        model.module.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, device=device, 
+                                        task1_monitor=args.monitor_value)
         for uuid, triplet in stored_results.items():
             sample, entailment_prob, evidence_prob = triplet
             entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
             compute_and_save_predictions(train_pred, sample, entailment_pred, entailment_prob, evidence_pred, evidence_prob)
         del stored_results
-        print(model.module.thresh_entailment, model.module.thresh_evidence)
 
         # Evaluate model on cross-validation(dev) set
         model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
-                entailment_prob, evidence_prob = model.forward(sample)
-                entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                with accelerator.autocast():
+                    entailment_prob, evidence_prob = model.forward(sample)
+                    entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
+                    loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
+                                                           evidence_prob, torch.tensor(sample['label_task2']).to(device))
             val_loss = val_loss + loss.item()
             compute_and_save_predictions(val_pred, sample, 
                                          entailment_pred.detach().cpu().numpy(), 
@@ -236,11 +241,13 @@ if __name__ == '__main__':
         train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
         train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
         train_task1_F1.append(train_metrics['Task1-Macro-F1'])
+        train_calibration.append(train_metrics['Task1-Calibration'])
         train_task2_F1.append(train_metrics['Task2-F1'])
         
         val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
         val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
         val_task1_F1.append(val_metrics['Task1-Macro-F1'])
+        val_calibration.append(val_metrics['Task1-Calibration'])
         val_task2_F1.append(val_metrics['Task2-F1'])
         
         if accelerator.is_main_process:
@@ -249,13 +256,20 @@ if __name__ == '__main__':
             print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
             print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
             print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
+            print("{:>50}".format(f"Train Calibration: {train_metrics['Task1-Calibration']:8.6f}"), "{:>50}".format(f"Val Calibration: {val_metrics['Task1-Calibration']:8.6f}"))
 
         # early stopping
-        early_stopping(val_metrics['Task1-Macro-F1'], model)
+        if args.monitor_value == 'Macro-F1':
+            monitor_val = val_metrics['Task1-Macro-F1']
+        elif args.monitor_value == 'F1-entail':
+            monitor_val = val_metrics['Task1-Entailment-F1']
+        else:
+            raise Exception('monitor_value should be Macro-F1 or F1-entail')
+        early_stopping(monitor_val, model)
         if early_stopping.early_stop:
             print(f"Early Stopping after {e+1} epochs")
             break    
-        scheduler.step(val_metrics['Task1-Macro-F1'])
+        scheduler.step(monitor_val)
 
     # ------------------------------Save result on train and val data------------------------------
     result = {'args': args,
@@ -264,12 +278,14 @@ if __name__ == '__main__':
               'train_task1_F1_contra': train_task1_F1_contra,
               'train_epoch_loss': train_epoch_loss,
               'train_task1_F1': train_task1_F1,
+              'train_calibration': train_calibration,
               'train_task2_F1': train_task2_F1,
 
               'val_task1_F1_entail': val_task1_F1_entail,
               'val_task1_F1_contra': val_task1_F1_contra,
               'val_epoch_loss': val_epoch_loss,
               'val_task1_F1': val_task1_F1,
+              'val_calibration': val_calibration, 
               'val_task2_F1': val_task2_F1,
               
               'epoch_time': epoch_time}
