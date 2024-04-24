@@ -161,7 +161,7 @@ class ModelArchitecture1(Module):
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         if task1_monitor == 'Macro-F1':
             index = torch.argmax(macro_F1)
-        elif task1_monitor == 'F1-entail:
+        elif task1_monitor == 'F1-entail':
             index = torch.argmax(F1_entailment)
         else:
             raise Exception("task1 monitor quantity should be either Macro-F1 or F1-entail")
