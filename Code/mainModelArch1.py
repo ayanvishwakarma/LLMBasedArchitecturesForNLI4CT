@@ -89,8 +89,6 @@ if __name__ == '__main__':
     parser.add_argument('--lr', default=0.0005, type=float, help='The learning rate. Default 0.0005')
     parser.add_argument('--batch_size', default=32, type=int, help='The batch size. Default 32')
     parser.add_argument('--epochs', default=8, type=int, help='Number of epochs to run the model. Default 8')
-    parser.add_argument('--cuda', default=False, action=argparse.BooleanOptionalAction, help='True if using gpu. Default False')
-    parser.add_argument('--gpu_no', default=0, type=int, help='The gpu id to use. Default 0')
     parser.add_argument('--patience_es', default=5, type=int, help='Patience of early stopping. Default 5')
     parser.add_argument('--delta_es', default=0.0, type=float, help='Delta of early stopping. Default 0.0')
     parser.add_argument('--scheduler_factor', default=0.5, type=float, help='Threshold for early stopping. Default 0.5')
@@ -120,11 +118,6 @@ if __name__ == '__main__':
 
     # ------------------------------Prepare DataLoaders------------------------------
     seed_everything(args.seed)
-    if args.cuda:
-        device = torch.device('cuda:' + str(args.gpu_no)) if torch.cuda.is_available() else torch.device('cpu')
-    else:
-        device = torch.device('cpu')
-    print("device: ", device)
     trainset = DatasetNLI4CT(root_dir=root_dir, split_name='train', args=args)
     devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args)
     testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args)
