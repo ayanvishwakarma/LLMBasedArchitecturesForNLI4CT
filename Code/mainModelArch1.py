@@ -10,6 +10,7 @@ import time
 import json
 import argparse
 from accelerate import Accelerator
+from accelerate import DistributedDataParallelKwargs
 
 from data import DatasetNLI4CT
 from evaluate import evaluate_predictions
@@ -143,7 +144,9 @@ if __name__ == '__main__':
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
     scaler = torch.cuda.amp.GradScaler()
 
-    accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None)
+    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
+                              kwargs_handlers=[ddp_kwargs])
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
     device = accelerator.device
     # ------------------------------Model Training------------------------------
