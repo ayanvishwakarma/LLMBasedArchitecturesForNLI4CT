@@ -35,7 +35,7 @@ class TextEncoder(Module):
             if not self.model.supports_gradient_checkpointing:
                 print(f"'{self.llm_path}' does not support gradient checkpointing")
             else:
-                self.model.gradient_checkpointing_enable()
+                self.model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant":False})
                 assert self.model.is_gradient_checkpointing
         
     def forward(self, texts):
