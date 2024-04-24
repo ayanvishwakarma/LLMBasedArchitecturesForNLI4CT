@@ -142,7 +142,6 @@ if __name__ == '__main__':
     accelerator = Accelerator(mixed_precision='fp16' if args.mixed_precision else None, 
                               kwargs_handlers=[ddp_kwargs])
     model, optimizer, scheduler, trainset, devset, testset = accelerator.prepare(model, optimizer, scheduler, trainset, devset, testset)
-    device = accelerator.device
     # ------------------------------Model Training------------------------------
     for e in range(args.epochs):
         print("Epoch: ", e+1)
@@ -163,8 +162,8 @@ if __name__ == '__main__':
             with accelerator.autocast():
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']))
                 accelerator.backward(loss)
             
             batch_processed = (batch_processed + 1) % args.batch_size
@@ -193,8 +192,8 @@ if __name__ == '__main__':
             with torch.no_grad():
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.module.get_predictions(entailment_prob, evidence_prob)
-                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
-                                                       evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']), 
+                                                       evidence_prob, torch.tensor(sample['label_task2']))
             if accelerator.is_main_process:
                 val_loss = val_loss + loss.item()
                 compute_and_save_predictions(val_pred, sample, 
@@ -259,8 +258,9 @@ if __name__ == '__main__':
     # ------------------------------Load model for testing------------------------------
     best_model_auprc = ModelArchitecture1(args)
     best_model_auprc.load_state_dict(os.path.join(result_addr, 'model_state_dict.pt'))
-    best_model_auprc.to(device)
     print("Model based on AUPRC loaded for testing.")
+
+    best_model_auprc = accelerator.prepare(best_model_auprc)
     
     train_loss = 0
     train_pred = {}
