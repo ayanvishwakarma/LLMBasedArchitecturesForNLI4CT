@@ -191,18 +191,21 @@ if __name__ == '__main__':
         # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
         model.train()
         stored_results = {}
+        l = []
         for sample in tqdm(trainset):
             with torch.no_grad():
                 with torch.autocast(device_type=device.type, dtype=torch.float16):
                     entailment_prob, evidence_prob = model.forward(sample)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                    l.append(float(entailment_prob))
             train_loss = train_loss + loss.item()
             stored_results[sample['uuid']] = (sample, entailment_prob, evidence_prob)
             train_task1_labels.append(sample['label_task1'])
             train_task1_logits.append(float(entailment_prob)) 
             train_task2_labels.extend(sample['label_task2'])
             train_task2_logits.extend([float(x) for x in evidence_prob.detach().cpu().numpy()])
+        print(l)
         model.on_train_epoch_end(train_task1_labels, train_task1_logits, train_task2_labels, train_task2_logits, 
                                         task1_monitor=args.monitor_value)
         for uuid, triplet in stored_results.items():
@@ -217,6 +220,7 @@ if __name__ == '__main__':
 
         # Evaluate model on cross-validation(dev) set
         model.eval()
+        l = []
         for sample in tqdm(devset):
             with torch.no_grad():
                 with torch.autocast(device_type=device.type, dtype=torch.float16):
@@ -224,12 +228,14 @@ if __name__ == '__main__':
                     entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
+                    l.append(float(entailment_prob))
             val_loss = val_loss + loss.item()
             compute_and_save_predictions(val_pred, sample, 
                                          entailment_pred.detach().cpu().numpy(), 
                                          entailment_prob.detach().cpu().numpy(),
                                          evidence_pred.detach().cpu().numpy(),
                                          evidence_prob.detach().cpu().numpy())
+        print(l)
 
         # Calculate mean loss of training data and validation data
         train_epoch_loss.append(train_loss * args.batch_size / len(trainset))
