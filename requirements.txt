@@ -1,4 +1,5 @@
 torch
-peft
-transformers
 numpy
+transformers
+peft
+accelerate
