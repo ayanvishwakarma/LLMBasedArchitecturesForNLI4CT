@@ -21,8 +21,10 @@ from focal_loss.focal_loss import FocalLoss
 def get_loss_fn(args):
     if args.loss == 'ce':
         loss = nn.CrossEntropyLoss()
-    else args.loss == 'focal':
+    elif args.loss == 'focal':
         loss = FocalLoss(gamma=2.0)
+    else:
+        raise Exception("loss should be either of ce(cross-entropy) or focal(focal-loss)")
     def loss_fn(prob_task1, true_task1, prob_task2, true_task2):
         prob_task1, true_task1 = prob_task1.view(-1, 1), true_task1.view(-1)
         prob_task2, true_task2 = prob_task2.view(-1, 1), true_task2.view(-1)
