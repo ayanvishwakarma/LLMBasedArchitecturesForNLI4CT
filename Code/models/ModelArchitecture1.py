@@ -157,6 +157,8 @@ class ModelArchitecture1(Module):
         
         macro_F1 = (F1_entailment + F1_contradiction) / 2
         self.register_buffer('thresh_entailment', thresholds[torch.argmax(macro_F1)])
+
+        print(macro_F1, thresholds)
         
         sorted_inds = torch.argsort(torch.tensor(evidence_logits).to(device))
         evidence_labels = torch.tensor(evidence_labels, dtype=torch.int32).to(device)[sorted_inds]
