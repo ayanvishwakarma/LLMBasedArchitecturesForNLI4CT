@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--cross_repr_module', default='transformer', type=str, help='The head1 model to consider. Default transformer',
                         choices=['identity', 'transformer', 'bilstm'])
     parser.add_argument('--entail_head_module', default='identity', type=str, help='The head2 model to consider. Default identity',
-                        choices=['identity', 'transformer', 'bilstm'])
+                        choices=['identity', 'transformer', 'bilstm', 'mean-pooling'])
     parser.add_argument('--evidence_classify', default='post', type=str, 
                         help='The evidence probability in cross_repr_module be calculated before or after the module',
                         choices=['pre', 'post'])
