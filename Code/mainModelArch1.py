@@ -166,6 +166,7 @@ if __name__ == '__main__':
                                                      cooldown=0, min_lr=1e-8, eps=1e-08, verbose=True)
     scaler = torch.cuda.amp.GradScaler()
     # ------------------------------Model Training------------------------------
+    batch_processed = 0
     for e in range(args.epochs):
         print("Epoch: ", e+1)
         train_loss = 0
@@ -181,7 +182,6 @@ if __name__ == '__main__':
         # train model on trainset
         model.train()
         st_time = time.time()
-        batch_processed = 0
         for sample in tqdm(trainset):
             with torch.autocast(device_type=device.type, dtype=torch.float16):
                 entailment_prob, evidence_prob = model.forward(sample)
