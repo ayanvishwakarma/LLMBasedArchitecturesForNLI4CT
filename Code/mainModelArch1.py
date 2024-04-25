@@ -147,6 +147,8 @@ if __name__ == '__main__':
     devset = DatasetNLI4CT(root_dir=root_dir, split_name='dev', args=args)
     testset = DatasetNLI4CT(root_dir=root_dir, split_name='test', args=args)
 
+    print('Example trainset instance: ', trainset[0])
+
     # ------------------------------Initialize early stopping------------------------------
     early_stopping = EarlyStopping(patience=args.patience_es, verbose=True, delta=args.delta_es, 
                                    save_path=os.path.join(result_addr, 'model_state_dict.pt'))
