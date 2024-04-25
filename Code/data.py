@@ -33,8 +33,11 @@ class DatasetNLI4CT(Dataset):
                           + (f'under subsection "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '') 
                           + f'in line {i} the following text is written "{section_text[i]}"' for i in range(len(section_text))])
             text_ids.extend([1 for i in range(len(section_text))])
-            evidence_inds = set(data_inst['Primary_evidence_index'])
-            labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
+            if 'Primary_evidence_index' in data_inst:
+                evidence_inds = set(data_inst['Primary_evidence_index'])
+                labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
+            else:
+                labels_task2.extend([int(-1) for i in range(len(section_text))])
             
         if data_inst['Type'] == 'Comparison':
             with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}.json', 'r') as file:
@@ -45,9 +48,12 @@ class DatasetNLI4CT(Dataset):
                               + (f'under subsection "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '')
                               + f'in line {i} the following text is written "{section_text[i]}"' for i in range(len(section_text))])
                 text_ids.extend([2 for i in range(len(section_text))])
-                evidence_inds = set(data_inst['Secondary_evidence_index'])
-                labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
-
+                if 'Secondary_evidence_index' in data_inst:
+                    evidence_inds = set(data_inst['Secondary_evidence_index'])
+                    labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
+                else:
+                    labels_task2.extend([int(-1) for i in range(len(section_text))])
+                    
         if self.data_ablation == 'hypothesis-only':
             texts = []
             text_ids = []
