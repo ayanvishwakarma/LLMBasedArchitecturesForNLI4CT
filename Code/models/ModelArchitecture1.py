@@ -101,7 +101,7 @@ class MeanPooling(Module):
                                         nn.Sigmoid())
         
     def forward(self, inputs):
-        return self.classifier(inputs.mean(dim=0).unsqueeze(0)).squeeze(0)
+        return self.classifier(inputs.mean(dim=0).unsqueeze(0)).squeeze(0)[0]
         
 class ModelArchitecture1(Module):
     def __init__(self, args, **kwargs):
