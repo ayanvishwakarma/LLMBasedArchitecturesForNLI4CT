@@ -31,7 +31,7 @@ class DatasetNLI4CT(Dataset):
             subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
             texts.extend([f'In Primary CTR {data_inst["Section_id"]} section, ' 
                           + (f'under subsection "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '') 
-                          + f'in line {i} the following text is written "{section_text[i]}"' for i in range(len(section_text))])
+                          + f'in line {i} the following premise is given "{section_text[i]}"' for i in range(len(section_text))])
             text_ids.extend([1 for i in range(len(section_text))])
             if 'Primary_evidence_index' in data_inst:
                 evidence_inds = set(data_inst['Primary_evidence_index'])
@@ -46,7 +46,7 @@ class DatasetNLI4CT(Dataset):
                 subsection_ids = np.maximum.accumulate([(-1 if x.startswith(' ') else i) for i, x in enumerate(section_text)])
                 texts.extend([f'In Secondary CTR {data_inst["Section_id"]} section, ' 
                               + (f'under subsection "{section_text[subsection_ids[i]]}", ' if subsection_ids[i] >= 0 else '')
-                              + f'in line {i} the following text is written "{section_text[i]}"' for i in range(len(section_text))])
+                              + f'in line {i} the following premise is given "{section_text[i]}"' for i in range(len(section_text))])
                 text_ids.extend([2 for i in range(len(section_text))])
                 if 'Secondary_evidence_index' in data_inst:
                     evidence_inds = set(data_inst['Secondary_evidence_index'])
