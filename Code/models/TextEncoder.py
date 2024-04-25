@@ -13,10 +13,8 @@ class TextEncoder(Module):
         self.llm_path = args.llm_path
         self.config = AutoConfig.from_pretrained(self.llm_path)
         if args.quantization is None:
-            print("here")
             self.model = AutoModel.from_pretrained(self.llm_path)
         else:
-            print("there")
             self.model = AutoModel.from_pretrained(self.llm_path, 
                          quantization_config=QuantoConfig(weights=args.quantization))
         self.tokenizer = AutoTokenizer.from_pretrained(self.llm_path)
