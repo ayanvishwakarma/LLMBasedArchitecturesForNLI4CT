@@ -62,7 +62,10 @@ if __name__ == '__main__':
     parser.add_argument('--MAX_SEQ_LEN', default=512, type=int, 
                         help='The max-sequence length for llm tokenizer. Default 512')
     parser.add_argument('--llm_finetune', action='store_true', help='Finetune llm. Default False')
-    parser.add_argument('--use_lora', action='store_true', help='. Default False')
+    parser.add_argument('--use_lora', action='store_true', help='Use Low-Rank Adaptation. Default False')
+    parser.add_argument('--lora_rank', default=64, type=int, help='The LoRA rank value. Default 64')
+    parser.add_argument('--lora_alpha', default=16, type=int, help='The LoRA alpha value. Default 16')
+    parser.add_argument('--lora_dropout', default=0.1, type=float, help='The LoRA dropout value. Default 0.1')
     parser.add_argument('--grad_chkpnt', action='store_true', help='Use Gradient Checkpointing. Default False')
     
     # Model Architecture args
