@@ -12,7 +12,7 @@ class TextEncoder(Module):
         super().__init__(**kwargs)
         self.llm_path = args.llm_path
         self.config = AutoConfig.from_pretrained(self.llm_path)
-        if args.quantization is 'None':
+        if args.quantization is None:
             print("here")
             self.model = AutoModel.from_pretrained(self.llm_path)
         else:
