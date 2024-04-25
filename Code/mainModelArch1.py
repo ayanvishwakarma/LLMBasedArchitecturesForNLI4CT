@@ -301,11 +301,8 @@ if __name__ == '__main__':
     best_model_auprc.to(device)
     print("Model based on AUPRC loaded for testing.")
     
-    train_loss = 0
     train_pred = {}
-    val_loss = 0
     val_pred = {}
-    test_loss = 0
     test_pred = {}
     
     best_model_auprc.eval()
@@ -322,10 +319,6 @@ if __name__ == '__main__':
                 with torch.autocast(device_type=device.type, dtype=torch.float16):
                     entailment_prob, evidence_prob = model.forward(sample)
                     entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
-                    loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor([sample['label_task1']]).to(device), 
-                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
-            if split_name == 'test':
-                test_loss = test_loss + loss.item()
             compute_and_save_predictions(pred_dict, sample, 
                                          entailment_pred.detach().cpu().numpy(), 
                                          entailment_prob.detach().cpu().numpy(),
