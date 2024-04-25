@@ -69,6 +69,8 @@ if __name__ == '__main__':
     parser.add_argument('--grad_chkpnt', action='store_true', help='Use Gradient Checkpointing. Default False')
     
     # Model Architecture args
+    parser.add_argument('--prepend_hypot', action='store_true', 
+                        help='Should hypothesis be prepended before premises when premises are input to text-encoder. Default False')
     parser.add_argument('--cross_repr_module', default='transformer', type=str, help='The head1 model to consider. Default transformer',
                         choices=['identity', 'transformer', 'bilstm'])
     parser.add_argument('--entail_head_module', default='identity', type=str, help='The head2 model to consider. Default identity',
