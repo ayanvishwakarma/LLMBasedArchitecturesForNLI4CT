@@ -47,8 +47,6 @@ def compute_and_save_predictions(pred_dict, sample, entailment_pred, entailment_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-
-    union_none_str = lambda x: None if x in [None, 'None'] else x
     
     # Seed
     parser.add_argument('--exp_name', default='exp-0', type=str, help='The name of experiment')
@@ -68,9 +66,9 @@ if __name__ == '__main__':
     parser.add_argument('--lora_rank', default=64, type=int, help='The LoRA rank value. Default 64')
     parser.add_argument('--lora_alpha', default=16, type=int, help='The LoRA alpha value. Default 16')
     parser.add_argument('--lora_dropout', default=0.1, type=float, help='The LoRA dropout value. Default 0.1')
-    parser.add_argument('--quantization', default='None', type=union_none_str, 
+    parser.add_argument('--quantization', default=None, type=str, 
                         help='The quantization to apply on text-encoder LLM, example int8. Default None',
-                        choices=['None', 'int8', 'float8', 'float16'])
+                        choices=[None, 'int8', 'float8', 'float16'])
     parser.add_argument('--grad_chkpnt', action='store_true', help='Use Gradient Checkpointing. Default False')
     
     # Model Architecture args
