@@ -119,8 +119,9 @@ class ModelArchitecture1(Module):
             self.pos_weights = nn.Linear(1, args.hidden_size, bias=True, dtype=torch.float32)
         
     def positional_embedding(self, pos_ids):
+        device = pos_ids.device
         if self.args.pos_emb == 'static':
-            w = pos_ids.unsqueeze(-1) / (10000 ** torch.linspace(0, 1, self.args.hidden_size//2))
+            w = pos_ids.unsqueeze(-1) / (10000 ** torch.linspace(0, 1, self.args.hidden_size//2).to(device))
             return torch.cat([torch.sin(w), torch.cos(w)], dim=-1)
         elif self.args.pos_emb == 'learnable':
             w = self.pos_weights(pos_ids.unsqueeze(-1))
@@ -135,8 +136,8 @@ class ModelArchitecture1(Module):
         text_embed[0] += self.CLS_EMBD
 
         if self.args.pos_emb is not None:
-            pos_emb = self.positional_embedding(torch.arange(text_embed.shape[0], dtype=torch.float32))
-            text_embed += pos_emb.to(device)
+            pos_emb = self.positional_embedding(torch.arange(text_embed.shape[0], dtype=torch.float32).to(device))
+            text_embed += pos_emb
         
         cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
         if self.training:
