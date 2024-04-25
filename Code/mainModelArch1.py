@@ -296,7 +296,8 @@ if __name__ == '__main__':
 
     # ------------------------------Load model for testing------------------------------
     best_model_auprc = ModelArchitecture1(args)
-    best_model_auprc.load_state_dict(os.path.join(result_addr, 'model_state_dict.pt'))
+    model_path = os.path.join(result_addr, 'model_state_dict.pt')
+    best_model_auprc.load_state_dict(torch.load(model_path))
     best_model_auprc.to(device)
     print("Model based on AUPRC loaded for testing.")
     
