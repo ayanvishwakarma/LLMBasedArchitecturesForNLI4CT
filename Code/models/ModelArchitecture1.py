@@ -17,6 +17,8 @@ def module_factory(args, comp_name):
         return BiLSTM(comp_name, args)
     elif model_name == 'transformer':
         return Transformer(comp_name, args)
+    elif model_name == 'mean-pooling':
+        return MeanPooling(comp_name, args)
     else:
         raise Exception('Model not supported')
 
@@ -88,6 +90,19 @@ class Transformer(Module):
         else:
             return encoded_inputs, prob[1:]
 
+class MeanPooling(Module):
+    def __init__(self, comp_name, args, **kwargs):
+        super().__init__(**kwargs)
+        self.comp_name = comp_name
+        assert (self.comp_name in ['entail_head_module'])
+        self.evidence_classify = args.evidence_classify
+        self.classifier = nn.Sequential(nn.Linear(args.hidden_size, 1, 
+                                        bias=True, dtype=torch.float32),
+                                        nn.Sigmoid())
+        
+    def forward(self, inputs):
+        return self.classifier(inputs.mean(dim=0).unsqueeze(0)).squeeze(0)
+        
 class ModelArchitecture1(Module):
     def __init__(self, args, **kwargs):
         super().__init__(**kwargs)
