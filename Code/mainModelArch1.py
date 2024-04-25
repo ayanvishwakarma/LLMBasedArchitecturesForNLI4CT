@@ -331,10 +331,8 @@ if __name__ == '__main__':
         with open(os.path.join(result_addr, f'{split_name}.json'), 'w') as file:
             targets = json.dump(pred_dict, file)
 
-    result['test_loss'] = test_loss * args.batch_size / len(testset)   
     test_metrics = result[f'best-model-test-metrics'] 
 
-    print("{:>50}".format(f"Test Loss: {result['test_loss']:8.6f}"))
     print("{:>50}".format(f"Test Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"))
     print("{:>50}".format(f"Test Task2-F1: {train_metrics['Task2-F1']:8.6f}"))
     print("{:>50}".format(f"Test Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"))
