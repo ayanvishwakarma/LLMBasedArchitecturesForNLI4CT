@@ -68,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('--lora_dropout', default=0.1, type=float, help='The LoRA dropout value. Default 0.1')
     parser.add_argument('--quantization', default=None, type=str, 
                         help='The quantization to apply on text-encoder LLM, example int8. Default None',
-                        choices=[None, 'int8', 'float8', 'float16'])
+                        choices=[None, 'int2', 'int4', 'int8', 'float8'])
     parser.add_argument('--grad_chkpnt', action='store_true', help='Use Gradient Checkpointing. Default False')
     
     # Model Architecture args
