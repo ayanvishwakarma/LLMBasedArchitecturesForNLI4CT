@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import Module
-from transformers import AutoModel, AutoTokenizer, AutoConfig
+from transformers import AutoModel, AutoTokenizer, AutoConfig, QuantoConfig
 from peft import LoraModel, LoraConfig
 import numpy as np
 import os
@@ -12,7 +12,11 @@ class TextEncoder(Module):
         super().__init__(**kwargs)
         self.llm_path = args.llm_path
         self.config = AutoConfig.from_pretrained(self.llm_path)
-        self.model = AutoModel.from_pretrained(self.llm_path)
+        if args.quantization is None:
+            self.model = AutoModel.from_pretrained(self.llm_path)
+        else:
+            self.model = AutoModel.from_pretrained(self.llm_path, 
+                         quantization_config=QuantoConfig(weights="int8"))
         self.tokenizer = AutoTokenizer.from_pretrained(self.llm_path)
         self.MAX_SEQ_LEN = args.MAX_SEQ_LEN
         self.device_item = nn.Parameter(torch.tensor(0.0))
