@@ -52,7 +52,7 @@ class DatasetNLI4CT(Dataset):
                     evidence_inds = set(data_inst['Secondary_evidence_index'])
                     labels_task2.extend([int(i in evidence_inds) for i in range(len(section_text))])
                 else:
-                    labels_task2.extend([float('nan') for i in range(len(section_text))])
+                    labels_task2.extend([-1 for i in range(len(section_text))])
                     
         if self.data_ablation == 'hypothesis-only':
             texts = []
@@ -69,5 +69,5 @@ class DatasetNLI4CT(Dataset):
                       'premises': texts,
                       'premise_ids': text_ids,
                       'label_task1': int(data_inst['Label'] == 'Entailment'),
-                      'label_task2': [float('nan') for x in labels_task2]} 
+                      'label_task2': [int(x) for x in labels_task2]} 
         return output_data
