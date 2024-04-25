@@ -299,7 +299,7 @@ if __name__ == '__main__':
     model_path = os.path.join(result_addr, 'model_state_dict.pt')
     best_model_auprc.load_state_dict(torch.load(model_path))
     best_model_auprc.to(device)
-    print("Model based on AUPRC loaded for testing.")
+    print(f"Model based on {args.monitor_value} loaded for testing.")
     
     train_pred = {}
     val_pred = {}
