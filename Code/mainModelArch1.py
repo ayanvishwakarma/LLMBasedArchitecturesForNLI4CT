@@ -333,13 +333,13 @@ if __name__ == '__main__':
 
     test_metrics = result[f'best-model-test-metrics'] 
 
-    print("{:>50}".format(f"Test Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"))
-    print("{:>50}".format(f"Test Task2-F1: {train_metrics['Task2-F1']:8.6f}"))
-    print("{:>50}".format(f"Test Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"))
-    print("{:>50}".format(f"Test Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"))
-    print("{:>50}".format(f"Test Calibration: {train_metrics['Task1-Calibration']:8.6f}"))
-    print("{:>50}".format(f"Test Consistency: {train_metrics['Task1-Consistency']:8.6f}"))
-    print("{:>50}".format(f"Test Faithfulness: {train_metrics['Task1-Faithfulness']:8.6f}"))
+    print("{:>50}".format(f"Test Task1-Macro-F1: {test_metrics['Task1-Macro-F1']:8.6f}"))
+    print("{:>50}".format(f"Test Task2-F1: {test_metrics['Task2-F1']:8.6f}"))
+    print("{:>50}".format(f"Test Task1-Entailment-F1: {test_metrics['Task1-Entailment-F1']:8.6f}"))
+    print("{:>50}".format(f"Test Task1-Contradiction-F1: {test_metrics['Task1-Contradiction-F1']:8.6f}"))
+    print("{:>50}".format(f"Test Calibration: {test_metrics['Task1-Calibration']:8.6f}"))
+    print("{:>50}".format(f"Test Consistency: {test_metrics['Task1-Consistency']:8.6f}"))
+    print("{:>50}".format(f"Test Faithfulness: {test_metrics['Task1-Faithfulness']:8.6f}"))
 
     # ------------------------------Save results to a file------------------------------
     with open(os.path.join(result_addr, 'results.data'), 'wb') as file:
