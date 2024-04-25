@@ -188,7 +188,7 @@ if __name__ == '__main__':
         epoch_time.append(end_time - st_time)
         print("Epoch time: ", epoch_time[e])
 
-        # Set thresholds to maximize Macro-F1 for task1 and F1-score for task2
+        # Set thresholds to maximize F1-scores for task1 and task2
         model.train()
         stored_results = {}
         for sample in tqdm(trainset):
