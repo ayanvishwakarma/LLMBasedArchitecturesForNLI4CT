@@ -18,7 +18,7 @@ class TextEncoder(Module):
         else:
             print("there")
             self.model = AutoModel.from_pretrained(self.llm_path, 
-                         quantization_config=QuantoConfig(weights="int8"))
+                         quantization_config=QuantoConfig(weights=args.quantization))
         self.tokenizer = AutoTokenizer.from_pretrained(self.llm_path)
         self.MAX_SEQ_LEN = args.MAX_SEQ_LEN
         self.device_item = nn.Parameter(torch.tensor(0.0))
