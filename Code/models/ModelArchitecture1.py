@@ -125,7 +125,7 @@ class ModelArchitecture1(Module):
             return torch.cat([torch.sin(w), torch.cos(w)], dim=-1)
         elif self.args.pos_emb == 'learnable':
             w = self.pos_weights(pos_ids.unsqueeze(-1))
-            w[1:] = torch.sin(w[1:])
+            w = torch.cat([w[:, 0], torch.sin(w[:, 1:])], dim=-1)
             return w
         
     def forward(self, data_dict):
