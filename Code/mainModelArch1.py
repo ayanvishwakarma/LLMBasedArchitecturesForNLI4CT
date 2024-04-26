@@ -284,6 +284,7 @@ if __name__ == '__main__':
             print(f"Early Stopping after {e+1} epochs")
             break    
         scheduler.step(monitor_val)
+        torch.save(model.state_dict(), os.path.join(result_addr, f'{split_name}_{e}.json'))
 
     # ------------------------------Save result on train and val data------------------------------
     result = {'args': args,
