@@ -46,6 +46,7 @@ class EarlyStopping:
         if self.save_model:
             if self.verbose:
                 print(f'Metric-score increased ({self.score_max:.6f} --> {score:.6f}).  Saving model ...')
+            print("here")
             torch.save(model.state_dict(), self.save_path)
             self.score_max = score
 
