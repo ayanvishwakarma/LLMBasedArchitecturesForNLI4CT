@@ -4,3 +4,4 @@ transformers
 peft
 quanto
 focal-loss-torch
+torchmetrics
