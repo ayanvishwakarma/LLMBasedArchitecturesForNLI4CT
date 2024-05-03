@@ -207,7 +207,7 @@ if __name__ == '__main__':
         stored_results = {}
         for sample in tqdm(trainset):
             with torch.no_grad():
-                with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
+                with torch.autocast(device_type=device.type, dtype=torch.float32):
                     entailment_prob, evidence_prob = model.forward(sample)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
                                                            evidence_prob, torch.tensor(sample['label_task2']).to(device))
