@@ -187,7 +187,7 @@ if __name__ == '__main__':
         model.train()
         st_time = time.time()
         for sample in tqdm(trainset):
-            with torch.autocast(device_type=device.type, dtype=torch.bfloat32):
+            with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
                 entailment_prob, evidence_prob = model.forward(sample)
                 entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
                 loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
@@ -233,7 +233,7 @@ if __name__ == '__main__':
         model.eval()
         for sample in tqdm(devset):
             with torch.no_grad():
-                with torch.autocast(device_type=device.type, dtype=torch.float16):
+                with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
                     entailment_prob, evidence_prob = model.forward(sample)
                     entailment_pred, evidence_pred = model.get_predictions(entailment_prob, evidence_prob)
                     loss = (1 / args.batch_size) * loss_fn(entailment_prob, torch.tensor(sample['label_task1']).to(device), 
@@ -330,7 +330,7 @@ if __name__ == '__main__':
             
         for sample in tqdm(dataset):
             with torch.no_grad():
-                with torch.autocast(device_type=device.type, dtype=torch.float16):
+                with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
                     entailment_prob, evidence_prob = best_model_auprc.forward(sample)
                     entailment_pred, evidence_pred = best_model_auprc.get_predictions(entailment_prob, evidence_prob)
             compute_and_save_predictions(pred_dict, sample, 
