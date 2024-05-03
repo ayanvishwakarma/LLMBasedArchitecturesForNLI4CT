@@ -26,6 +26,11 @@ class TextEncoder(Module):
         if args.llm_finetune is False:
             for param in self.model.parameters():
                 param.requires_grad = False
+        else:
+            for name, param in self.model.named_parameters():
+                if any([i in name.split('/') for i in [str(x) for x in range(args.num_frozen_layers)]]):
+                    print(name)
+                    param.requires_grad = False
         
         if args.use_lora:
             lora_config = LoraConfig(r=args.lora_rank, 
