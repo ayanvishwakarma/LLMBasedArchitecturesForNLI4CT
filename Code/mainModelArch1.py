@@ -62,6 +62,8 @@ if __name__ == '__main__':
     parser.add_argument('--MAX_SEQ_LEN', default=512, type=int, 
                         help='The max-sequence length for llm tokenizer. Default 512')
     parser.add_argument('--llm_finetune', action='store_true', help='Finetune llm. Default False')
+    parser.add_argument('--freeze_layers', default=0, type=int, 
+                        help='The number of lower layers of LLM to freeze when llm_finetune is true, finetuning only the upper layers. Default=0')
     parser.add_argument('--use_lora', action='store_true', help='Use Low-Rank Adaptation. Default False')
     parser.add_argument('--lora_rank', default=64, type=int, help='The LoRA rank value. Default 64')
     parser.add_argument('--lora_alpha', default=16, type=int, help='The LoRA alpha value. Default 16')
