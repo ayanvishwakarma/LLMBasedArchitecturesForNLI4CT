@@ -26,9 +26,9 @@ class TextEncoder(Module):
         for name, param in self.model.named_parameters():
             if args.llm_finetune is False:
                 param.requires_grad = False
-            elif any([i in name.split('.') for i in [str(x) for x in range(args.num_frozen_layers)]]):
-                print(f'{name} is frozen')
-                param.requires_grad = False
+            elif ('embeddings' in name) or
+            any([i in name.split('.') for i in [str(x) for x in range(args.num_frozen_layers)]]):
+                    param.requires_grad = False
             else:
                 param.requires_grad = True
 
