@@ -24,10 +24,9 @@ class TextEncoder(Module):
                                 bias=True, dtype=torch.float32)
 
         for name, param in self.model.named_parameters():
-            print(name)
             if args.llm_finetune is False:
                 param.requires_grad = False
-            elif any([i in name.split('/') for i in [str(x) for x in range(args.num_frozen_layers)]]):
+            elif any([i in name.split('.') for i in [str(x) for x in range(args.num_frozen_layers)]]):
                 print(f'{name} is frozen')
                 param.requires_grad = False
             else:
