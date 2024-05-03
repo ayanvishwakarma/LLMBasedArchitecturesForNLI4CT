@@ -28,7 +28,7 @@ class TextEncoder(Module):
                 param.requires_grad = False
             elif args.num_frozen_layers > 0:
                 to_froze = any([i in name.split('.') for i in [str(x) for x in range(args.num_frozen_layers)]]) \
-                           or ('embeddings' in name):
+                           or ('embeddings' in name)
                 param.requires_grad = False
             else:
                 param.requires_grad = True
