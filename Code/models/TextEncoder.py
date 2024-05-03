@@ -31,6 +31,9 @@ class TextEncoder(Module):
                 param.requires_grad = False
             else:
                 param.requires_grad = True
+
+        for name, param in self.model.named_parameters():
+            print(name, param.requires_grad)
         
         if args.use_lora:
             lora_config = LoraConfig(r=args.lora_rank, 
