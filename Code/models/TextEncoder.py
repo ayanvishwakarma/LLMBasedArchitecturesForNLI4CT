@@ -22,15 +22,13 @@ class TextEncoder(Module):
         self.device_item = nn.Parameter(torch.tensor(0.0))
         self.linear = nn.Linear(self.config.hidden_size, out_size, 
                                 bias=True, dtype=torch.float32)
-        
-        if args.llm_finetune is False:
-            for param in self.model.parameters():
+
+        for name, param in self.model.named_parameters():
+            if args.llm_finetune is False:
                 param.requires_grad = False
-        else:
-            for name, param in self.model.named_parameters():
-                if any([i in name.split('/') for i in [str(x) for x in range(args.num_frozen_layers)]]):
-                    print(name)
-                    param.requires_grad = False
+            elif any([i in name.split('/') for i in [str(x) for x in range(args.num_frozen_layers)]]):
+                print(f'{name} is frozen')
+                param.requires_grad = False
         
         if args.use_lora:
             lora_config = LoraConfig(r=args.lora_rank, 
