@@ -83,6 +83,8 @@ if __name__ == '__main__':
     parser.add_argument('--evidence_classify', default='post', type=str, 
                         help='The evidence probability in cross_repr_module be calculated before or after the module',
                         choices=['pre', 'post'])
+    parser.add_argument('--ignore_evidence_selection', action='store_true', 
+                        help='Should premises selection be ignored from output of entail_head_module before passing to cross_repr_module. Default False')
     parser.add_argument('--hidden_size', default=128, type=int, help='The dimension of hidden layers of model. Default 128')
     parser.add_argument('--ff_dim', default=512, type=int, help='The feedforward hidden-layer dimension. Default 512')
     parser.add_argument('--num_layers_cross_repr', default=4, type=int, help='The number of layers in head1. Default 4')
