@@ -28,13 +28,10 @@ class TextEncoder(Module):
                 param.requires_grad = False
             elif args.num_frozen_layers > 0:
                 inds = [str(x) for x in range(args.num_frozen_layers)]
-                if any([i in name.split('.') for i in inds]) or ('embeddings' in name):
+                if any([i in name.split('.') for i in inds]) or ('embedding' in name):
                     param.requires_grad = False
             else:
                 param.requires_grad = True
-
-        for name, param in self.model.named_parameters():
-            print(name, param.requires_grad)
         
         if args.use_lora:
             lora_config = LoraConfig(r=args.lora_rank, 
