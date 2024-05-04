@@ -132,12 +132,20 @@ if __name__ == '__main__':
     train_task1_F1_entail = []
     train_task1_F1_contra = []
     train_task1_F1 = []
+    train_task1_AUROC = []
+    train_task1_AUPRC = []
+    train_task2_AUROC = []
+    train_task2_AUPRC = []
     train_calibration = []
     train_task2_F1 = []
     val_epoch_loss = []
     val_task1_F1_entail = []
     val_task1_F1_contra = []
     val_task1_F1 = []
+    val_task1_AUROC = []
+    val_task1_AUPRC = []
+    val_task2_AUROC = []
+    val_task2_AUPRC = []
     val_calibration = []
     val_task2_F1 = []
     epoch_time = []
@@ -262,12 +270,20 @@ if __name__ == '__main__':
         train_task1_F1_entail.append(train_metrics['Task1-Entailment-F1'])
         train_task1_F1_contra.append(train_metrics['Task1-Contradiction-F1'])
         train_task1_F1.append(train_metrics['Task1-Macro-F1'])
+        train_task1_AUROC.append(train_metrics['Task1-AUROC'])
+        train_task1_AUPRC.append(train_metrics['Task1-AUPRC'])
+        train_task2_AUROC.append(train_metrics['Task2-AUROC'])
+        train_task2_AUPRC.append(train_metrics['Task2-AUPRC'])
         train_calibration.append(train_metrics['Task1-Calibration'])
         train_task2_F1.append(train_metrics['Task2-F1'])
         
         val_task1_F1_entail.append(val_metrics['Task1-Entailment-F1'])
         val_task1_F1_contra.append(val_metrics['Task1-Contradiction-F1'])
         val_task1_F1.append(val_metrics['Task1-Macro-F1'])
+        val_task1_AUROC.append(val_metrics['Task1-AUROC'])
+        val_task1_AUPRC.append(val_metrics['Task1-AUPRC'])
+        val_task2_AUROC.append(val_metrics['Task2-AUROC'])
+        val_task2_AUPRC.append(val_metrics['Task2-AUPRC'])
         val_calibration.append(val_metrics['Task1-Calibration'])
         val_task2_F1.append(val_metrics['Task2-F1'])
         
@@ -275,6 +291,10 @@ if __name__ == '__main__':
         print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
         print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
         print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-AUROC: {train_metrics['Task1-AUROC']:8.6f}"), "{:>50}".format(f"Val Task1-AUROC: {val_metrics['Task1-AUROC']:8.6f}"))
+        print("{:>50}".format(f"Train Task2-AUROC: {train_metrics['Task2-AUROC']:8.6f}"), "{:>50}".format(f"Val Task2-AUROC: {val_metrics['Task2-AUROC']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-AUPRC: {train_metrics['Task1-AUPRC']:8.6f}"), "{:>50}".format(f"Val Task1-AUPRC: {val_metrics['Task1-AUPRC']:8.6f}"))
+        print("{:>50}".format(f"Train Task2-AUPRC: {train_metrics['Task2-AUPRC']:8.6f}"), "{:>50}".format(f"Val Task2-AUPRC: {val_metrics['Task2-AUPRC']:8.6f}"))
         print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
         print("{:>50}".format(f"Train Calibration: {train_metrics['Task1-Calibration']:8.6f}"), "{:>50}".format(f"Val Calibration: {val_metrics['Task1-Calibration']:8.6f}"))
 
@@ -293,6 +313,10 @@ if __name__ == '__main__':
               'train_task1_F1_contra': train_task1_F1_contra,
               'train_epoch_loss': train_epoch_loss,
               'train_task1_F1': train_task1_F1,
+              'train_task1_AUROC': train_task1_AUROC,
+              'train_task1_AUPRC': train_task1_AUPRC,
+              'train_task2_AUROC': train_task2_AUROC,
+              'train_task2_AUPRC': train_task2_AUPRC,
               'train_calibration': train_calibration,
               'train_task2_F1': train_task2_F1,
 
@@ -300,6 +324,10 @@ if __name__ == '__main__':
               'val_task1_F1_contra': val_task1_F1_contra,
               'val_epoch_loss': val_epoch_loss,
               'val_task1_F1': val_task1_F1,
+              'val_task1_AUROC': val_task1_AUROC,
+              'val_task1_AUPRC': val_task1_AUPRC,
+              'val_task2_AUROC': val_task2_AUROC,
+              'val_task2_AUPRC': val_task2_AUPRC,
               'val_calibration': val_calibration, 
               'val_task2_F1': val_task2_F1,
               
