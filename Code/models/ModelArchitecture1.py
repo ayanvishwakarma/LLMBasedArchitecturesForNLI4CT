@@ -140,7 +140,6 @@ class ModelArchitecture1(Module):
             text_embed += pos_emb
         
         cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
-        print(cross_repr_output)
         if not self.args.ignore_evidence_selection:
             if self.training:
                 evidence_labels = torch.tensor(data_dict['label_task2'])
