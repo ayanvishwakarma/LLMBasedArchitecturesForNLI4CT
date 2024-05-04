@@ -290,11 +290,11 @@ if __name__ == '__main__':
         print("{:>50}".format(f"Train Loss: {train_epoch_loss[e]:8.6f}"), "{:>50}".format(f"Val Loss: {val_epoch_loss[e]:8.6f}"))
         print("{:>50}".format(f"Train Task1-Macro-F1: {train_metrics['Task1-Macro-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Macro-F1: {val_metrics['Task1-Macro-F1']:8.6f}"))
         print("{:>50}".format(f"Train Task2-F1: {train_metrics['Task2-F1']:8.6f}"), "{:>50}".format(f"Val Task2-F1: {val_metrics['Task2-F1']:8.6f}"))
-        print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
         print("{:>50}".format(f"Train Task1-AUROC: {train_metrics['Task1-AUROC']:8.6f}"), "{:>50}".format(f"Val Task1-AUROC: {val_metrics['Task1-AUROC']:8.6f}"))
         print("{:>50}".format(f"Train Task2-AUROC: {train_metrics['Task2-AUROC']:8.6f}"), "{:>50}".format(f"Val Task2-AUROC: {val_metrics['Task2-AUROC']:8.6f}"))
         print("{:>50}".format(f"Train Task1-AUPRC: {train_metrics['Task1-AUPRC']:8.6f}"), "{:>50}".format(f"Val Task1-AUPRC: {val_metrics['Task1-AUPRC']:8.6f}"))
         print("{:>50}".format(f"Train Task2-AUPRC: {train_metrics['Task2-AUPRC']:8.6f}"), "{:>50}".format(f"Val Task2-AUPRC: {val_metrics['Task2-AUPRC']:8.6f}"))
+        print("{:>50}".format(f"Train Task1-Entailment-F1: {train_metrics['Task1-Entailment-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Entailment-F1: {val_metrics['Task1-Entailment-F1']:8.6f}"))
         print("{:>50}".format(f"Train Task1-Contradiction-F1: {train_metrics['Task1-Contradiction-F1']:8.6f}"), "{:>50}".format(f"Val Task1-Contradiction-F1: {val_metrics['Task1-Contradiction-F1']:8.6f}"))
         print("{:>50}".format(f"Train Calibration: {train_metrics['Task1-Calibration']:8.6f}"), "{:>50}".format(f"Val Calibration: {val_metrics['Task1-Calibration']:8.6f}"))
 
