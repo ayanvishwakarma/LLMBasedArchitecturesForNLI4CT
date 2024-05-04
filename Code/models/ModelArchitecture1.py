@@ -49,7 +49,7 @@ class BiLSTM(Module):
             num_layers = args.num_layers_cross_repr
         else:
             num_layers = args.num_layers_entail_head
-        self.encoder = nn.LSTM(input_size=args.hidden_size, hidden_size=args.hidden_size,
+        self.encoder = nn.LSTM(input_size=args.hidden_size, hidden_size=args.hidden_size//2,
                                num_layers=num_layers, bias=True, dropout=args.dropout,
                                bidirectional=True, dtype=torch.float32)
         self.classifier = nn.Sequential(nn.Linear(args.hidden_size, 1, 
