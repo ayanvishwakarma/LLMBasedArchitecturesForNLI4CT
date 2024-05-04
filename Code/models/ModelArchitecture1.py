@@ -140,12 +140,15 @@ class ModelArchitecture1(Module):
             text_embed += pos_emb
         
         cross_repr_output, evidence_prob = self.cross_repr_module(text_embed)
-        if self.training:
-            evidence_labels = torch.tensor(data_dict['label_task2'])
-            evidence_inds = torch.where(evidence_labels)[0].to(device)
+        if not self.args.ignore_evidence_selection:
+            if self.training:
+                evidence_labels = torch.tensor(data_dict['label_task2'])
+                evidence_inds = torch.where(evidence_labels)[0].to(device)
+            else:
+                evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0].to(device)
+            entail_head_input = cross_repr_output[torch.cat([torch.tensor([0]).to(device), evidence_inds], dim=-1)]
         else:
-            evidence_inds = torch.where(evidence_prob >= self.thresh_evidence)[0].to(device)
-        entail_head_input = cross_repr_output[torch.cat([torch.tensor([0]).to(device), evidence_inds], dim=-1)]
+            entail_head_input = cross_repr_output
         
         entailment_prob = self.entail_head_module(entail_head_input)
         
