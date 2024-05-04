@@ -162,6 +162,8 @@ if __name__ == '__main__':
     # ------------------------------Model Creation------------------------------
     model = ModelArchitecture1(args)
     model.to(device)
+    for name, param in self.model.named_parameters():
+        print(name, param.requires_grad)
     loss_fn = get_loss_fn(args)
     optimizer = optim.AdamW([{"params": [p for n, p in model.named_parameters() if ('text_encoder' in n) and (p.requires_grad)], "weight_decay_rate": 0.01},
                              {"params": [p for n, p in model.named_parameters() if ('text_encoder' not in n) and (p.requires_grad)]}], lr=args.lr)
