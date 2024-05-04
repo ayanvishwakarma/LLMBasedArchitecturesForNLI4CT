@@ -57,7 +57,7 @@ class BiLSTM(Module):
                                         nn.Sigmoid())
         
     def forward(self, inputs):
-        encoded_inputs = self.encoder(inputs)
+        encoded_inputs = self.encoder(inputs)[0]
         prob = self.classifier(encoded_inputs if self.evidence_classify == 'post' else inputs).squeeze(-1)
         if self.comp_name == 'entail_head_module':
             return prob[0]
