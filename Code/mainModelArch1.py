@@ -279,12 +279,7 @@ if __name__ == '__main__':
         print("{:>50}".format(f"Train Calibration: {train_metrics['Task1-Calibration']:8.6f}"), "{:>50}".format(f"Val Calibration: {val_metrics['Task1-Calibration']:8.6f}"))
 
         # early stopping
-        if args.monitor_value == 'Macro-F1':
-            monitor_val = val_metrics['Task1-Macro-F1']
-        elif args.monitor_value == 'F1-entail':
-            monitor_val = val_metrics['Task1-Entailment-F1']
-        else:
-            raise Exception('monitor_value should be Macro-F1 or F1-entail')
+        monitor_val = val_metrics['Task1-AUROC']
         early_stopping(monitor_val, model)
         if early_stopping.early_stop:
             print(f"Early Stopping after {e+1} epochs")
