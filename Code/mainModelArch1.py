@@ -374,6 +374,10 @@ if __name__ == '__main__':
 
     print("{:>50}".format(f"Test Task1-Macro-F1: {test_metrics['Task1-Macro-F1']:8.6f}"))
     print("{:>50}".format(f"Test Task2-F1: {test_metrics['Task2-F1']:8.6f}"))
+    print("{:>50}".format(f"Test Task1-AUROC: {test_metrics['Task1-AUROC']:8.6f}"))
+    print("{:>50}".format(f"Test Task2-AUROC: {test_metrics['Task2-AUROC']:8.6f}"))
+    print("{:>50}".format(f"Test Task1-AUPRC: {test_metrics['Task1-AUPRC']:8.6f}"))
+    print("{:>50}".format(f"Test Task2-AUPRC: {test_metrics['Task2-AUPRC']:8.6f}"))
     print("{:>50}".format(f"Test Task1-Entailment-F1: {test_metrics['Task1-Entailment-F1']:8.6f}"))
     print("{:>50}".format(f"Test Task1-Contradiction-F1: {test_metrics['Task1-Contradiction-F1']:8.6f}"))
     print("{:>50}".format(f"Test Calibration: {test_metrics['Task1-Calibration']:8.6f}"))
