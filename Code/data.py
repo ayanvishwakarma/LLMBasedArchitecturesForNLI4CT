@@ -21,10 +21,6 @@ class BackTranslator:
         fr_to_en_model_name = 'Helsinki-NLP/opus-mt-fr-en'
         self.fr_to_en_tokenizer = MarianTokenizer.from_pretrained(fr_to_en_model_name)
         self.fr_to_en_model = MarianMTModel.from_pretrained(fr_to_en_model_name).to(self.device)
-
-        if args.multi_gpu:
-            self.en_to_fr_model = nn.DataParallel(self.en_to_fr_model, device_ids=[int(x) for x in args.gpu_ids.split(',')])
-            self.fr_to_en_model = nn.DataParallel(self.fr_to_en_model, device_ids=[int(x) for x in args.gpu_ids.split(',')])
   
     def __call__(self, texts):
         with torch.no_grad():
