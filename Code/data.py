@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import json
 import os
+from transformers import MarianMTModel, MarianTokenizer
 
 class BackTranslator:
     def __init__(self, args):
