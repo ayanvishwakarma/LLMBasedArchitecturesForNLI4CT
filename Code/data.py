@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset
+from torch import nn
 import numpy as np
 import json
 import os
@@ -20,15 +21,19 @@ class BackTranslator:
         fr_to_en_model_name = 'Helsinki-NLP/opus-mt-fr-en'
         self.fr_to_en_tokenizer = MarianTokenizer.from_pretrained(fr_to_en_model_name)
         self.fr_to_en_model = MarianMTModel.from_pretrained(fr_to_en_model_name).to(self.device)
+
+        if args.multi_gpu:
+            self.en_to_fr_model = nn.DataParallel(self.en_to_fr_model, device_ids=[int(x) for x in args.gpu_ids.split(',')])
+            self.fr_to_en_model = nn.DataParallel(self.fr_to_en_model, device_ids=[int(x) for x in args.gpu_ids.split(',')])
   
     def __call__(self, texts):
         with torch.no_grad():
             complete_texts = texts
             backtranslated_texts = []
             print(len(texts))
-            for i in range(0, len(texts), 32):
+            for i in range(0, len(texts), 128):
                 print(i)
-                texts = complete_texts[i: i+32]
+                texts = complete_texts[i: i+128]
                 texts = ['>>fr<< ' + text for text in texts]
                 en_to_fr_inputs = {key: value.to(self.device) for key, value in self.en_to_fr_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
                 pretexts = [self.en_to_fr_tokenizer.decode(text, skip_special_tokens=True) for text in self.en_to_fr_model.generate(**en_to_fr_inputs)]
