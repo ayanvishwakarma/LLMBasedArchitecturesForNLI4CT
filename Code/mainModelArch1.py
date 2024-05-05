@@ -55,6 +55,7 @@ if __name__ == '__main__':
     # Dataset args
     parser.add_argument('--data_ablation', default=None, type=str, help='The data ablation study to consider. Default None',
                         choices=[None, 'hypothesis-only', 'gold-evidence'])
+    parser.add_argument('--backtranslate', action='store_true', help='Should backtranslation data-augmentation be used here. Default False')
     
     # Text Enocder args
     parser.add_argument('--llm_path', default='microsoft/deberta-base', type=str, 
