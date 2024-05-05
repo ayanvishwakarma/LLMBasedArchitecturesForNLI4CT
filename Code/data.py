@@ -27,7 +27,7 @@ class BackTranslator:
         complete_texts = texts
         backtranslated_texts = []
         for i in range(0, len(texts), 32):
-            texts = backtranslated_texts[i: i+32]
+            texts = complete_texts[i: i+32]
             texts = ['>>fr<< ' + text for text in texts]
             en_to_fr_inputs = {key: value.to(self.device) for key, value in self.en_to_fr_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
             pretexts = [self.en_to_fr_tokenizer.decode(text, skip_special_tokens=True) for text in self.en_to_fr_model.generate(**en_to_fr_inputs)]
