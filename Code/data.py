@@ -39,15 +39,30 @@ class DatasetNLI4CT(Dataset):
         with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
 
+        aug_data = {}
         if split_name == 'train' and args.backtranslate:
             translator = BackTranslator(args)
             for uuid, data_inst in self.data.items():
                 if not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json'):
                     with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
                         data = json.load(file)
-                    
-            self.data.keys()
-            
+                    for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
+                        data[key] = translator(data[key])
+                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'r') as file:
+                        json.dump(data, file)
+                    data_inst["Primary_id"] = data_inst["Primary_id"] + "_BT"
+                if ("Secondary_id" in data_inst) and (not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json')):
+                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}.json', 'r') as file:
+                        data = json.load(file)
+                    for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
+                        data[key] = translator(data[key])
+                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json', 'r') as file:
+                        json.dump(data, file)
+                    data_inst["Secondary_id"] = data_inst["Secondary_id"] + "_BT"
+                data_inst["Statement"] = translator(data_inst["Statement"])
+                aug_data[uuid + '_BT'] = data_inst
+            for key, value in aug_data.items():
+                self.data[key] = value
         
         self.uuids = list(self.data.keys())
         if verbose:
