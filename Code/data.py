@@ -49,7 +49,7 @@ class DatasetNLI4CT(Dataset):
                         data = json.load(file)
                     for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
                         data[key] = translator(data[key])
-                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'r') as file:
+                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'w+') as file:
                         json.dump(data, file)
                     data_inst["Primary_id"] = data_inst["Primary_id"] + "_BT"
                 if ("Secondary_id" in data_inst) and (not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json')):
@@ -57,7 +57,7 @@ class DatasetNLI4CT(Dataset):
                         data = json.load(file)
                     for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
                         data[key] = translator(data[key])
-                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json', 'r') as file:
+                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json', 'w+') as file:
                         json.dump(data, file)
                     data_inst["Secondary_id"] = data_inst["Secondary_id"] + "_BT"
                 data_inst["Statement"] = translator(data_inst["Statement"])
