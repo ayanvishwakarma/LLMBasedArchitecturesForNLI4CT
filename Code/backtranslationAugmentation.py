@@ -30,7 +30,6 @@ class BackTranslator:
             backtranslated_texts = []
             for i in range(0, len(texts), 64):
                 texts = complete_texts[i: i+64]
-                print(texts)
                 texts = ['>>fr<< ' + text for text in texts]
                 en_to_fr_inputs = {key: value.to(self.device) for key, value in self.en_to_fr_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
                 pretexts = [self.en_to_fr_tokenizer.decode(text, skip_special_tokens=True) for text in self.en_to_fr_model.generate(**en_to_fr_inputs)]
@@ -56,13 +55,10 @@ if __name__ == '__main__':
     translator = BackTranslator(args)
     aug_data = {}
     for uuid, data_inst in tqdm(train_data.items()):
-        print(uuid, time.ctime())
         if not os.path.exists(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json'):
-            print("Here", time.ctime())
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
                 data = json.load(file)
             for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
-                print(key, time.ctime())
                 data[key] = translator(data[key])
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'w+') as file:
                 json.dump(data, file)
@@ -80,5 +76,5 @@ if __name__ == '__main__':
         break
     for key, value in aug_data.items():
         train_data[key] = value
-    with open(f'{args.root_dir}/Data/train.json', 'r') as file:
+    with open(f'{args.root_dir}/Data/train.json', 'w+') as file:
         json.dump(train_data, file)
