@@ -73,7 +73,6 @@ if __name__ == '__main__':
             data_inst["Secondary_id"] = data_inst["Secondary_id"] + "_BT"
         data_inst["Statement"] = translator([data_inst["Statement"]])[0]
         aug_data[uuid + '_BT'] = data_inst
-        break
     for key, value in aug_data.items():
         train_data[key] = value
     with open(f'{args.root_dir}/Data/train.json', 'w+') as file:
