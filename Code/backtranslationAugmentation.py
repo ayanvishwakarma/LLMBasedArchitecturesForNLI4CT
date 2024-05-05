@@ -62,7 +62,6 @@ if __name__ == '__main__':
                 data[key] = translator(data[key])
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'w+') as file:
                 json.dump(data, file)
-            data_inst["Primary_id"] = data_inst["Primary_id"] + "_BT"
         if ("Secondary_id" in data_inst) and (not os.path.exists(f'{args.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json')):
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}.json', 'r') as file:
                 data = json.load(file)
@@ -70,6 +69,8 @@ if __name__ == '__main__':
                 data[key] = translator(data[key])
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json', 'w+') as file:
                 json.dump(data, file)
+        data_inst["Primary_id"] = data_inst["Primary_id"] + "_BT"
+        if "Secondary_id" in data_inst:
             data_inst["Secondary_id"] = data_inst["Secondary_id"] + "_BT"
         data_inst["Statement"] = translator([data_inst["Statement"]])[0]
         aug_data[uuid + '_BT'] = data_inst
