@@ -4,6 +4,7 @@ import numpy as np
 import json
 import os
 from transformers import MarianMTModel, MarianTokenizer
+import tqdm
 
 class BackTranslator:
     def __init__(self, args):
@@ -43,7 +44,7 @@ class DatasetNLI4CT(Dataset):
         aug_data = {}
         if split_name == 'train' and args.backtranslate:
             translator = BackTranslator(args)
-            for uuid, data_inst in self.data.items():
+            for uuid, data_inst in tqdm(self.data.items()):
                 if not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json'):
                     with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
                         data = json.load(file)
