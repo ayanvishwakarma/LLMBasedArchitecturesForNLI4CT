@@ -2,6 +2,33 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import json
+import os
+
+class BackTranslator:
+    def __init__(self, args):
+        if args.cuda:
+            self.device = torch.device('cuda:' + str(args.gpu_no)) if torch.cuda.is_available() else torch.device('cpu')
+        else:
+            self.device = torch.device('cpu')
+
+        en_to_fr_model_name = 'Helsinki-NLP/opus-mt-en-fr'
+        self.en_to_fr_tokenizer = MarianTokenizer.from_pretrained(en_to_fr_model_name)
+        self.en_to_fr_model = MarianMTModel.from_pretrained(en_to_fr_model_name).to(self.device)
+
+        fr_to_en_model_name = 'Helsinki-NLP/opus-mt-fr-en'
+        self.fr_to_en_tokenizer = MarianTokenizer.from_pretrained(fr_to_en_model_name)
+        self.fr_to_en_model = MarianMTModel.from_pretrained(fr_to_en_model_name).to(self.device)
+  
+    def __call__(self, texts):
+        texts = ['>>fr<< ' + text for text in texts]
+        en_to_fr_inputs = {key: value.to(self.device) for key, value in self.en_to_fr_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
+        pretexts = [self.en_to_fr_tokenizer.decode(text, skip_special_tokens=True) for text in self.en_to_fr_model.generate(**en_to_fr_inputs)]
+
+        texts = ['>>en<< ' + text for text in pretexts]
+        fr_to_en_inputs = {key: value.to(self.device) for key, value in self.fr_to_en_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
+        texts = [self.fr_to_en_tokenizer.decode(text, skip_special_tokens=True) for text in self.fr_to_en_model.generate(**fr_to_en_inputs)]
+
+        return texts
 
 class DatasetNLI4CT(Dataset):
     def __init__(self, root_dir, split_name, args, verbose=True, **kwargs):
@@ -11,6 +38,17 @@ class DatasetNLI4CT(Dataset):
         
         with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
+
+        if split_name == 'train' and args.backtranslate:
+            translator = BackTranslator(args)
+            for uuid, data_inst in self.data.items():
+                if not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json'):
+                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
+                        data = json.load(file)
+                    
+            self.data.keys()
+            
+        
         self.uuids = list(self.data.keys())
         if verbose:
             print(f'Number of instances in {split_name}: {len(self.uuids)}')
