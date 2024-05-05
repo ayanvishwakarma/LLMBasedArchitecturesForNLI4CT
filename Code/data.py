@@ -20,6 +20,8 @@ class BackTranslator:
         fr_to_en_model_name = 'Helsinki-NLP/opus-mt-fr-en'
         self.fr_to_en_tokenizer = MarianTokenizer.from_pretrained(fr_to_en_model_name)
         self.fr_to_en_model = MarianMTModel.from_pretrained(fr_to_en_model_name).to(self.device)
+
+        print(self.fr_to_en_model.device, self.en_to_fr_model.device)
   
     def __call__(self, texts):
         texts = ['>>fr<< ' + text for text in texts]
