@@ -42,7 +42,7 @@ class BackTranslator:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root_dir', type='str', required=True, help='The path to LLMBasedArchitecturesForNLI4CT folder')
+    parser.add_argument('--root_dir', type=str, required=True, help='The path to LLMBasedArchitecturesForNLI4CT folder')
     parser.add_argument('--cuda', default=False, action='store_true', help='True if using gpu. Default False')
     parser.add_argument('--gpu_no', default=0, type=int, help='The number of gpu to use. Default 0')
     parser.add_argument('--multi_gpu', default=False, action='store_true', help='True if multi-gpu training is to be used. Default False')
