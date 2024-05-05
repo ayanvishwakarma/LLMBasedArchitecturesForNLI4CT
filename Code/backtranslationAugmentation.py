@@ -7,6 +7,7 @@ import os
 from transformers import MarianMTModel, MarianTokenizer
 from tqdm import tqdm
 import argparse
+import time
 
 class BackTranslator:
     def __init__(self, args):
@@ -55,10 +56,13 @@ if __name__ == '__main__':
     translator = BackTranslator(args)
     aug_data = {}
     for uuid, data_inst in tqdm(train_data.items()):
+        print(uuid, time.ctime())
         if not os.path.exists(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json'):
+            print("Here", time.ctime())
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
                 data = json.load(file)
             for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
+                print(key, time.ctime())
                 data[key] = translator(data[key])
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'w+') as file:
                 json.dump(data, file)
