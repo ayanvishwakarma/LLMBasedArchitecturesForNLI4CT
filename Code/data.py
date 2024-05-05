@@ -4,7 +4,7 @@ import numpy as np
 import json
 import os
 from transformers import MarianMTModel, MarianTokenizer
-import tqdm
+from tqdm import tqdm
 
 class BackTranslator:
     def __init__(self, args):
