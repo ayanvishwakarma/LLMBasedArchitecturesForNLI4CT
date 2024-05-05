@@ -24,7 +24,7 @@ class BackTranslator:
     def __call__(self, texts):
         complete_texts = texts
         backtranslated_texts = []
-        print(texts)
+        print(len(texts))
         for i in range(0, len(texts), 32):
             print(i)
             texts = complete_texts[i: i+32]
