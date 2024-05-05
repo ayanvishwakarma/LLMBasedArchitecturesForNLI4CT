@@ -75,7 +75,7 @@ if __name__ == '__main__':
             with open(f'{args.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json', 'w+') as file:
                 json.dump(data, file)
             data_inst["Secondary_id"] = data_inst["Secondary_id"] + "_BT"
-        data_inst["Statement"] = translator(data_inst["Statement"])
+        data_inst["Statement"] = translator([data_inst["Statement"]])[0]
         aug_data[uuid + '_BT'] = data_inst
     for key, value in aug_data.items():
         train_data[key] = value
