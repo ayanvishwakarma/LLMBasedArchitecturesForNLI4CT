@@ -4,40 +4,7 @@ from torch import nn
 import numpy as np
 import json
 import os
-from transformers import MarianMTModel, MarianTokenizer
 from tqdm import tqdm
-
-class BackTranslator:
-    def __init__(self, args):
-        if args.cuda:
-            self.device = torch.device('cuda:' + str(args.gpu_no)) if torch.cuda.is_available() else torch.device('cpu')
-        else:
-            self.device = torch.device('cpu')
-
-        en_to_fr_model_name = 'Helsinki-NLP/opus-mt-en-fr'
-        self.en_to_fr_tokenizer = MarianTokenizer.from_pretrained(en_to_fr_model_name)
-        self.en_to_fr_model = MarianMTModel.from_pretrained(en_to_fr_model_name).to(self.device)
-
-        fr_to_en_model_name = 'Helsinki-NLP/opus-mt-fr-en'
-        self.fr_to_en_tokenizer = MarianTokenizer.from_pretrained(fr_to_en_model_name)
-        self.fr_to_en_model = MarianMTModel.from_pretrained(fr_to_en_model_name).to(self.device)
-  
-    def __call__(self, texts):
-        with torch.no_grad():
-            complete_texts = texts
-            backtranslated_texts = []
-            for i in range(0, len(texts), 64):
-                texts = complete_texts[i: i+64]
-                texts = ['>>fr<< ' + text for text in texts]
-                en_to_fr_inputs = {key: value.to(self.device) for key, value in self.en_to_fr_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
-                pretexts = [self.en_to_fr_tokenizer.decode(text, skip_special_tokens=True) for text in self.en_to_fr_model.generate(**en_to_fr_inputs)]
-        
-                texts = ['>>en<< ' + text for text in pretexts]
-                fr_to_en_inputs = {key: value.to(self.device) for key, value in self.fr_to_en_tokenizer.batch_encode_plus(texts, return_tensors='pt', padding=True).items()}
-                texts = [self.fr_to_en_tokenizer.decode(text, skip_special_tokens=True) for text in self.fr_to_en_model.generate(**fr_to_en_inputs)]
-    
-                backtranslated_texts.extend(texts)
-            return backtranslated_texts
 
 class DatasetNLI4CT(Dataset):
     def __init__(self, root_dir, split_name, args, verbose=True, **kwargs):
@@ -47,31 +14,6 @@ class DatasetNLI4CT(Dataset):
         
         with open(f'{self.root_dir}/Data/{split_name}.json', 'r') as file:
             self.data = json.load(file)
-
-        aug_data = {}
-        if split_name == 'train' and args.backtranslate:
-            translator = BackTranslator(args)
-            for uuid, data_inst in tqdm(self.data.items()):
-                if not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json'):
-                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}.json', 'r') as file:
-                        data = json.load(file)
-                    for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
-                        data[key] = translator(data[key])
-                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Primary_id"]}_BT.json', 'w+') as file:
-                        json.dump(data, file)
-                    data_inst["Primary_id"] = data_inst["Primary_id"] + "_BT"
-                if ("Secondary_id" in data_inst) and (not os.path.exists(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json')):
-                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}.json', 'r') as file:
-                        data = json.load(file)
-                    for key in ['Intervention', 'Eligibility', 'Adverse Events', 'Results']:
-                        data[key] = translator(data[key])
-                    with open(f'{self.root_dir}/Data/CTR json/{data_inst["Secondary_id"]}_BT.json', 'w+') as file:
-                        json.dump(data, file)
-                    data_inst["Secondary_id"] = data_inst["Secondary_id"] + "_BT"
-                data_inst["Statement"] = translator(data_inst["Statement"])
-                aug_data[uuid + '_BT'] = data_inst
-            for key, value in aug_data.items():
-                self.data[key] = value
         
         self.uuids = list(self.data.keys())
         if verbose:
