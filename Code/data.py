@@ -16,6 +16,8 @@ class DatasetNLI4CT(Dataset):
             self.data = json.load(file)
         
         self.uuids = list(self.data.keys())
+        if not args.backtranslate:
+            self.uuids = [uuid for uuid in self.uuids if not uuid.endswith('_BT')]
         if verbose:
             print(f'Number of instances in {split_name}: {len(self.uuids)}')
     
