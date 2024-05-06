@@ -85,6 +85,9 @@ def evaluate_predictions(targets, predictions, args):
     control_set_uuids = [uuid for uuid in targets.keys() if 'Intervention' not in targets[uuid]]
     contrast_set_uuids = [uuid for uuid in targets.keys() if 'Intervention' in targets[uuid]]
 
+    if not args.backtranslate:
+        control_set_uuids = [uuid for uuid in control_set_uuids if not uuid.endswith('_BT')]
+
     metrics_dict = {}
     if args.evaluate_task1:
         metrics_dict = {**metrics_dict, **task1_metrics(targets, predictions, control_set_uuids, args)}
